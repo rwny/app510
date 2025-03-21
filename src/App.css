@@ -754,7 +754,7 @@ h1, h2, h3, h4 {
   box-shadow: none;
 }
 
-/* Highlighted headers */
+/* Highlighted headers - speech bubble style */
 .room-table.transposed .highlighted-header {
   background-color: #bfe6f5;
   color: #1d6fa5;
@@ -763,20 +763,62 @@ h1, h2, h3, h4 {
   font-weight: bold;
 }
 
-.room-table.transposed .room-cell-header.highlighted-header::after {
-  content: '◀';
-  position: absolute;
-  right: 6px;
-  color: #219ebc;
+/* Remove previous triangle characters */
+.room-table.transposed .room-cell-header.highlighted-header::after,
+.room-table.transposed .time-header.highlighted-header::after {
+  content: none;
 }
 
-.room-table.transposed .time-header.highlighted-header::after {
-  content: '▼';
+/* Create speech bubble pointer for room headers */
+.room-table.transposed .room-cell-header.highlighted-header::before {
+  content: '';
   position: absolute;
-  bottom: 0;
+  right: -10px; /* Position outside the cell */
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 8px 0 8px 10px;
+  border-style: solid;
+  border-color: transparent transparent transparent #bfe6f5;
+  z-index: 2;
+}
+
+/* Border for room header speech bubble pointer */
+.room-table.transposed .room-cell-header.highlighted-header::after {
+  content: '';
+  position: absolute;
+  right: -11px; /* Position just behind the fill */
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 9px 0 9px 11px;
+  border-style: solid;
+  border-color: transparent transparent transparent #8ecae6;
+  z-index: 1;
+}
+
+/* Create speech bubble pointer for time headers */
+.room-table.transposed .time-header.highlighted-header::before {
+  content: '';
+  position: absolute;
+  bottom: -10px; /* Position outside the cell */
   left: 50%;
   transform: translateX(-50%);
-  color: #219ebc;
+  border-width: 10px 8px 0 8px;
+  border-style: solid;
+  border-color: #bfe6f5 transparent transparent transparent;
+  z-index: 2;
+}
+
+/* Border for time header speech bubble pointer */
+.room-table.transposed .time-header.highlighted-header::after {
+  content: '';
+  position: absolute;
+  bottom: -11px; /* Position just behind the fill */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 11px 9px 0 9px;
+  border-style: solid;
+  border-color: #8ecae6 transparent transparent transparent;
+  z-index: 1;
 }
 
 /* Responsive fixes for transposed table */
