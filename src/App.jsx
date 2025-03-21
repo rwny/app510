@@ -28,6 +28,9 @@ function App() {
     x: 0, 
     y: 0 
   });
+
+  // State for floor plan modal
+  const [showFloorPlan, setShowFloorPlan] = useState(false);
   
   // Generate available dates (today + 6 more days)
   const availableDates = Array.from({ length: 7 }, (_, i) => {
@@ -128,6 +131,23 @@ function App() {
 
   // Cell click handler
   const handleCellClick = (roomId, timeSlotId, event) => {
+    // Don't allow clicks when booking success is showing
+    if (bookingSuccess) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setNotification({
+        show: true,
+        message: 'กรุณากดปุ่ม "เสร็จสิ้น" ก่อนเลือกห้องใหม่',
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY
+      });
+      
+      setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+      }, 3000);
+      
+      return;
+    }
+
     // Simply return early for past time slots - no notification needed
     if (isTimeSlotPast(selectedDate, timeSlotId)) {
       return; // No notification, just do nothing
@@ -198,7 +218,19 @@ function App() {
       
       <section className="room-layout">
         <div className="room-layout-header">
-          <h2>ระบบจองห้องเรียน {buildingName} ({buildingID})</h2>
+          <h2>
+            ระบบจองห้องเรียน {buildingName} ({buildingID})
+            <button 
+              className="floor-plan-button" 
+              onClick={() => setShowFloorPlan(true)}
+              title="ดูแผนผังอาคาร"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 1.5a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V2a.5.5 0 0 1 .5-.5z"/>
+                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+              </svg>
+            </button>
+          </h2>
           <div className="date-selector">
             {availableDates.map((date) => (
               <button 
@@ -213,7 +245,7 @@ function App() {
         </div>
         
         <div className="room-table-container">
-          <table className="room-table transposed">
+          <table className={`room-table transposed ${bookingSuccess ? 'disabled-table' : ''}`}>
             <thead>
               <tr>
                 <th className="building-header">ห้อง</th>
@@ -270,16 +302,30 @@ function App() {
         </div>
       </section>
       
+      {/* Floor Plan Modal */}
+      {showFloorPlan && (
+        <div className="modal-overlay" onClick={() => setShowFloorPlan(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-button" onClick={() => setShowFloorPlan(false)}>×</button>
+            <h3>แผนผังอาคาร {buildingName}</h3>
+            <div className="floor-plan-image-container">
+              <img src="./src/assets/plan1.png" alt="Floor Plan" className="floor-plan-image" />
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="dynamic-content">
         <section className="booking-form">
           {/* <h2>จองห้อง</h2> */}
           {bookingSuccess ? (
-            <div className="booking-success">
+            <div className="booking-success compact">
               <div className="success-icon">✓</div>
-              <h3>จองห้องเรียบร้อยแล้ว</h3>
-              <p>ห้อง {selectedRoom} เวลา {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label}</p>
-              <p>วันที่ {formatDate(selectedDate)}</p>
-              <p>รหัสนักศึกษา: {studentID}</p>
+              <div className="success-details">
+                <h3>จองห้องเรียบร้อยแล้ว</h3>
+                <p>ห้อง {selectedRoom} • {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label} • {formatDate(selectedDate)}</p>
+                <p>รหัส: {studentID}</p>
+              </div>
               <button 
                 className="done-button"
                 onClick={resetBookingForm}

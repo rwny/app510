@@ -502,43 +502,57 @@ h1, h2, h3, h4 {
   gap: 10px;
 }
 
+.booking-success.compact {
+  flex-direction: row;
+  text-align: left;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
 .booking-success .success-icon {
-  height: 60px;
-  width: 60px;
+  height: 40px; /* Reduced from 60px */
+  width: 40px; /* Reduced from 60px */
   border-radius: 50%;
   background-color: #28a745;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
-  margin-bottom: 10px;
+  font-size: 22px; /* Reduced from 30px */
+  margin: 0; /* Removed margin */
+  flex-shrink: 0;
+}
+
+.booking-success.compact .success-details {
+  flex: 1;
+  padding: 0 10px;
+  min-width: 200px;
 }
 
 .booking-success h3 {
   color: #28a745;
   margin: 0;
+  font-size: 1rem; /* Smaller font size */
 }
 
 .booking-success p {
-  margin: 5px 0;
+  margin: 3px 0; /* Reduced from 5px */
   color: #333333;
+  font-size: 0.9rem; /* Smaller font size */
 }
 
 .done-button {
-  padding: 10px 20px;
+  padding: 8px 15px; /* Reduced from 10px 20px */
   background: #28a745;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  margin-top: 10px;
+  font-size: 14px; /* Reduced from 16px */
+  margin-top: 0; /* Removed margin */
   transition: background 0.2s;
-}
-
-.done-button:hover {
-  background: #218838;
+  flex-shrink: 0;
 }
 
 /* Floating notification */
@@ -779,4 +793,114 @@ h1, h2, h3, h4 {
   .room-table.transposed .time-header {
     min-width: auto;
   }
+}
+
+/* Table state while success is showing */
+.room-table.disabled-table {
+  opacity: 0.7;
+  pointer-events: none; /* This would disable all clicks, but we want to handle in JS for notification */
+}
+
+.room-table.disabled-table .time-cell {
+  cursor: not-allowed;
+}
+
+/* Alternative approach with JS handling */
+.room-table.transposed.disabled-table {
+  position: relative;
+}
+
+.room-table.transposed.disabled-table::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.3);
+  pointer-events: all; /* Allow clicks to be captured */
+  cursor: not-allowed;
+}
+
+/* Floor Plan Button */
+.floor-plan-button {
+  background: none;
+  border: none;
+  color: #3a86ff;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 8px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  vertical-align: middle;
+}
+
+.floor-plan-button:hover {
+  background-color: rgba(58, 134, 255, 0.1);
+}
+
+.floor-plan-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  position: relative;
+  overflow: auto;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #555;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover {
+  background-color: #f1f1f1;
+}
+
+.floor-plan-image-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.floor-plan-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
 }
