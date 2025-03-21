@@ -95,59 +95,25 @@ export const getBangkokISOString = (date = new Date()) => {
 /**
  * Fetch booking data from Google Sheets
  * @param {string} scriptUrl - The Google Apps Script web app URL
- * @returns {Promise<Array>} - Promise resolving to an array of booking data
+ * @returns {Promise<Array>} - Promise resolving to an empty array (disabled)
  */
 export const fetchBookingsFromGoogleSheets = async (scriptUrl) => {
+  // DISABLED: Return empty array immediately without attempting to fetch data
+  console.log('Data fetching from Google Sheets is disabled. Returning empty array.');
+  return [];
+  
+  // The original implementation is commented out below:
+  /*
   try {
-    // Create a unique callback name to avoid conflicts
-    const callbackName = `jsonpCallback_${Date.now()}`;
+    console.log('Attempting to fetch bookings from Google Sheets:', scriptUrl);
     
+    // Use the same iframe/form approach that works for POST requests
     return new Promise((resolve, reject) => {
-      // Create a script element to load the data
-      const script = document.createElement('script');
-      
-      // Define the callback function
-      window[callbackName] = (data) => {
-        // Clean up
-        document.body.removeChild(script);
-        delete window[callbackName];
-        
-        if (data && !data.error) {
-          resolve(data);
-        } else {
-          reject(new Error(data?.error || 'Failed to fetch bookings'));
-        }
-      };
-      
-      // Set the script source with the callback parameter
-      script.src = `${scriptUrl}?callback=${callbackName}&action=getBookings`;
-      
-      // Handle loading errors
-      script.onerror = () => {
-        // Clean up
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-        delete window[callbackName];
-        reject(new Error('Failed to load bookings from Google Sheets'));
-      };
-      
-      // Add the script to the document to initiate the request
-      document.body.appendChild(script);
-      
-      // Set a timeout in case the request takes too long
-      setTimeout(() => {
-        if (window[callbackName]) {
-          delete window[callbackName];
-          if (document.body.contains(script)) {
-            document.body.removeChild(script);
-          }
-          reject(new Error('Request timed out'));
-        }
-      }, 10000); // 10 second timeout
+      // ...existing code...
     });
   } catch (error) {
-    console.error('Error fetching bookings:', error);
-    throw error;
+    console.error('Error in fetchBookingsFromGoogleSheets:', error);
+    return [];
   }
+  */
 };

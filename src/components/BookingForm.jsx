@@ -14,7 +14,8 @@ function BookingForm({
   bookRoom,
   resetBookingForm,
   buildingName,
-  buildingID
+  buildingID,
+  isSubmitting // Add new prop
 }) {
   return (
     <section className="booking-form">
@@ -55,9 +56,9 @@ function BookingForm({
           <button 
             className="book-button"
             onClick={bookRoom}
-            disabled={!isStudentIDValid}
+            disabled={!isStudentIDValid || isSubmitting} // Disable button when submitting
           >
-            จองห้อง
+            {isSubmitting ? 'กำลังบันทึกข้อมูล...' : 'จองห้อง'}
           </button>
         </div>
       ) : (

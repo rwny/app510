@@ -133,6 +133,8 @@ export default function Test02() {
             cursor: isSubmitting ? 'not-allowed' : 'pointer'
           }}
         >
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </button>
 
         {message && (
           <div style={{

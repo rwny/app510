@@ -38,11 +38,14 @@ function App() {
   const [showFloorPlan, setShowFloorPlan] = useState(false);
   
   // Google Sheet Web App URL - replace with your deployed Google Apps Script web app URL
-  const googleSheetWebAppUrl = 'https://script.google.com/macros/s/AKfycby_1y8hMkG-DLzOU2dRls_a74vj8Udh3JUcTZ-W0FdYgxL-ZcXsH4hw_Wvd4ALe03x-8A/exec';
+  const googleSheetWebAppUrl = 'https://script.google.com/macros/s/AKfycbwbnobxMj8svZT7pFqlt3UqbKk_73GmM_kHVOrFHFhz_b3YKTKBjL4U6abj6O0KsqaTnA/exec';
   const formRef = useRef(null);
 
   // Add loading state
   const [isLoading, setIsLoading] = useState(true);
+
+  // Add state to track submission status
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Generate available dates (today + 6 more days)
   const availableDates = Array.from({ length: 7 }, (_, i) => {
@@ -99,10 +102,14 @@ function App() {
   
   // Book a room
   const bookRoom = () => {
-    if (!selectedRoom || !selectedTimeSlot || !isStudentIDValid) {
+    // Changed condition to check if selectedTimeSlot is null/undefined instead of using !selectedTimeSlot
+    if (!selectedRoom || selectedTimeSlot === null || selectedTimeSlot === undefined || !isStudentIDValid) {
       alert('กรุณาเลือกห้อง เวลา และกรอกรหัสนักศึกษา 8 หลัก');
       return;
     }
+    
+    // Set submitting state to true
+    setIsSubmitting(true);
     
     const dateStr = selectedDate.toISOString().split('T')[0];
     
@@ -137,11 +144,15 @@ function App() {
     submitToGoogleSheets(googleSheetWebAppUrl, submissionData)
       .then(() => {
         console.log('Booking data submitted to Google Sheets');
+        // End submitting state
+        setIsSubmitting(false);
         // Show success message
         setBookingSuccess(true);
       })
       .catch(error => {
         console.error('Failed to submit to Google Sheets:', error);
+        // End submitting state
+        setIsSubmitting(false);
         // Still show booking success since local booking worked
         setBookingSuccess(true);
         // Optionally show a warning that cloud sync failed
@@ -251,28 +262,60 @@ function App() {
 
   // Fetch bookings from Google Sheets when component mounts
   useEffect(() => {
+    // Set loading to false immediately since data fetching is disabled
+    setIsLoading(false);
+    
+    // This is the disabled data fetching implementation
+    // We're keeping it commented out for future use
+    /*
     const fetchBookings = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchBookingsFromGoogleSheets(googleSheetWebAppUrl);
+        console.log('Fetching bookings from Google Sheets...');
+        
+        // Add timeout to prevent indefinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Fetch timeout after 15 seconds')), 15000)
+        );
+        
+        // Race between actual fetch and timeout
+        const data = await Promise.race([
+          fetchBookingsFromGoogleSheets(googleSheetWebAppUrl),
+          timeoutPromise
+        ]);
+        
+        console.log('Raw data from Google Sheets:', data);
         
         if (data && Array.isArray(data)) {
           // Process the booking data
           const bookingsMap = {};
           
           data.forEach(booking => {
-            // Skip the header row if it's included
-            if (booking.studentId === 'Student ID') return;
+            // Skip header rows or empty entries
+            if (booking.studentId === 'Student ID' || !booking.studentId) {
+              return;
+            }
             
-            // Get relevant booking data
-            const bookingDate = booking.bookingDate;
+            console.log('Processing booking:', booking);
+            
+            // Get relevant booking data - adjust property names based on actual data
+            // The property names come from the camelCase conversion in the Google Apps Script
+            const studentId = booking.studentId;
             const roomId = booking.roomId;
             const timeSlotStr = booking.timeSlot;
-            const studentId = booking.studentId;
+            const bookingDate = booking.bookingDate;
+            
+            if (!studentId || !roomId || !timeSlotStr || !bookingDate) {
+              console.warn('Missing required booking data:', booking);
+              return;
+            }
             
             // Find the timeSlot ID based on the label
             const timeSlotObj = timeSlots.find(slot => slot.label === timeSlotStr);
-            if (!timeSlotObj) return; // Skip if timeSlot not found
+            if (!timeSlotObj) {
+              console.warn(`Time slot not found: ${timeSlotStr}`);
+              return; // Skip if timeSlot not found
+            }
             
             const timeSlotId = timeSlotObj.id;
             
@@ -289,21 +332,40 @@ function App() {
               studentID: studentId,
               // Add other booking details as needed
             };
+            
+            console.log(`Added booking: ${bookingDate}, Room ${roomId}, Time ${timeSlotId}`);
           });
+          
+          console.log('Processed bookings map:', bookingsMap);
           
           // Update bookings state
           setBookings(bookingsMap);
+        } else {
+          console.warn('No valid booking data received or empty array returned');
+          // Still set loading to false to show the interface
         }
       } catch (error) {
         console.error('Failed to load bookings:', error);
-        // Optionally show an error message to the user
+        // Create a visible error notification for debugging
+        setNotification({
+          show: true,
+          message: `Could not load bookings: ${error.message}`,
+          x: window.innerWidth / 2,
+          y: 100
+        });
+        
+        setTimeout(() => {
+          setNotification(prev => ({ ...prev, show: false }));
+        }, 5000);
       } finally {
+        // Always set loading to false, even if there was an error
         setIsLoading(false);
       }
     };
     
     fetchBookings();
-  }, [googleSheetWebAppUrl]); // Only re-run if the URL changes
+    */
+  }, [googleSheetWebAppUrl, timeSlots]);
 
   return (
     <div className="booking-app" ref={appRef}>
@@ -330,8 +392,7 @@ function App() {
               title="ดูแผนผังอาคาร"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M8 1.5a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V2a.5.5 0 0 1 .5-.5z"/>
-                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                <path fillRule="evenodd" d="M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z"/>
               </svg>
             </button>
           </h2>
@@ -393,6 +454,7 @@ function App() {
           resetBookingForm={resetBookingForm}
           buildingName={buildingName}  // Added building name prop
           buildingID={buildingID}      // Added building ID prop
+          isSubmitting={isSubmitting} // Add the new state variable
         />
       </div>
 
