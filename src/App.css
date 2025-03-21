@@ -295,6 +295,33 @@ h1, h2, h3, h4 {
   background: #219ebc;
 }
 
+/* Improved validation for input fields */
+.input-container {
+  position: relative;
+  width: 100%;
+}
+
+.student-id-input.invalid {
+  border-color: #dc3545;
+  background-color: #fff8f8;
+}
+
+.validation-message {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.book-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.book-button:disabled:hover {
+  background-color: #cccccc;
+}
+
 /* Table Layout - simplify scrolling */
 .room-table-container {
   overflow: visible; /* Remove auto scrolling constraint */
@@ -415,17 +442,51 @@ h1, h2, h3, h4 {
 }
 
 .room-layout-header .date-selector button {
-  padding: 4px 6px; /* Reduced padding */
+  padding: 4px 6px;
   background: #ffffff;
   border: 1px solid #e6e6e6;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
   color: #555555;
   font-size: 0.8rem;
-  flex: 1; /* Make buttons grow to fill space */
-  margin: 0 2px; /* Add small margin between buttons */
-  min-width: 0; /* Remove min-width to allow buttons to shrink */
+  flex: 1;
+  margin: 0 2px;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.room-layout-header .date-selector button:hover {
+  background: #f0f7ff;
+  border-color: #8ecae6;
+}
+
+.room-layout-header .date-selector button.active {
+  background: #3a86ff; /* Stronger blue color */
+  color: #ffffff;
+  border-color: #3a86ff;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(58, 134, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.room-layout-header .date-selector button.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #fff;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Add active state animation */
+@keyframes buttonActivate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* Booking success message */
@@ -663,6 +724,18 @@ h1, h2, h3, h4 {
   text-align: center;
   padding: 4px 2px; /* Reduced padding */
   font-size: 0.75rem; /* Smaller font size */
+}
+
+/* Past time slot styling */
+.room-table.transposed .time-cell.past {
+  background-color: #f1f1f1;
+  color: #aaaaaa;
+  cursor: not-allowed;
+}
+
+.room-table.transposed .time-cell.past:hover {
+  background-color: #f1f1f1;
+  box-shadow: none;
 }
 
 /* Highlighted headers */

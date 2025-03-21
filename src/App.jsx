@@ -18,7 +18,6 @@ function App() {
   const [bookings, setBookings] = useState({});
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
-  const [userName, setUserName] = useState('');
   const [studentID, setStudentID] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
   
@@ -53,10 +52,40 @@ function App() {
     return bookings[dateStr]?.[roomId]?.[timeSlotId] !== undefined;
   };
   
+  // Check if a time slot is in the past
+  const isTimeSlotPast = (date, timeSlotId) => {
+    const today = new Date();
+    const slotDate = new Date(date);
+    
+    // If the date is in the past, the whole day is in the past
+    if (slotDate.setHours(0,0,0,0) < today.setHours(0,0,0,0)) {
+      return true;
+    }
+    
+    // If it's today, check if the time slot has passed
+    if (slotDate.setHours(0,0,0,0) === today.setHours(0,0,0,0)) {
+      const currentHour = new Date().getHours();
+      const slotStartHour = timeSlotId * 3;
+      
+      // If current hour is past the slot's start hour, it's in the past
+      return currentHour >= slotStartHour + 3; // Past if current hour is >= end time
+    }
+    
+    return false;
+  };
+
+  // Check if a room is available (not booked and not in the past)
+  const isRoomAvailable = (roomId, date, timeSlotId) => {
+    return !isRoomBooked(roomId, date, timeSlotId) && !isTimeSlotPast(date, timeSlotId);
+  };
+  
+  // Validate student ID - must be exactly 8 characters
+  const isStudentIDValid = studentID.trim().length === 8;
+  
   // Book a room
   const bookRoom = () => {
-    if (!selectedRoom || !selectedTimeSlot || !userName.trim() || !studentID.trim()) {
-      alert('กรุณาเลือกห้อง เวลา และกรอกข้อมูลผู้จอง (ชื่อและรหัสนักศึกษา)');
+    if (!selectedRoom || !selectedTimeSlot || !isStudentIDValid) {
+      alert('กรุณาเลือกห้อง เวลา และกรอกรหัสนักศึกษา 8 หลัก');
       return;
     }
     
@@ -68,7 +97,7 @@ function App() {
         ...(prev[dateStr] || {}),
         [selectedRoom]: {
           ...(prev[dateStr]?.[selectedRoom] || {}),
-          [selectedTimeSlot]: { userName, studentID } // Include studentID in booking data
+          [selectedTimeSlot]: { studentID } // Store only student ID
         }
       }
     }));
@@ -81,7 +110,6 @@ function App() {
   const resetBookingForm = () => {
     setSelectedRoom(null);
     setSelectedTimeSlot(null);
-    setUserName('');
     setStudentID(''); // Reset studentID
     setBookingSuccess(false);
   };
@@ -100,6 +128,23 @@ function App() {
 
   // Cell click handler
   const handleCellClick = (roomId, timeSlotId, event) => {
+    // Don't allow booking past time slots
+    if (isTimeSlotPast(selectedDate, timeSlotId)) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setNotification({
+        show: true,
+        message: 'ไม่สามารถจองเวลาที่ผ่านไปแล้ว',
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY
+      });
+      
+      setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+      }, 3000);
+      
+      return;
+    }
+    
     if (isRoomBooked(roomId, selectedDate, timeSlotId)) {
       // Show floating notification instead of alert
       const rect = event.currentTarget.getBoundingClientRect();
@@ -209,19 +254,25 @@ function App() {
                       >
                         ห้อง {room.id}
                       </td>
-                      {timeSlots.map(timeSlot => (
-                        <td 
-                          key={`${room.id}-${timeSlot.id}`} 
-                          className={`time-cell 
-                            ${isRoomBooked(room.id, selectedDate, timeSlot.id) ? 'booked' : 'available'} 
-                            ${selectedRoom === room.id && selectedTimeSlot === timeSlot.id ? 'selected' : ''}
-                          `}
-                          onClick={(e) => handleCellClick(room.id, timeSlot.id, e)}
-                          title={getBookingDetails(room.id, selectedDate, timeSlot.id)}
-                        >
-                          {isRoomBooked(room.id, selectedDate, timeSlot.id) ? 'จองแล้ว' : 'ว่าง'}
-                        </td>
-                      ))}
+                      {timeSlots.map(timeSlot => {
+                        const isPast = isTimeSlotPast(selectedDate, timeSlot.id);
+                        const isBooked = isRoomBooked(room.id, selectedDate, timeSlot.id);
+                        const isSelected = selectedRoom === room.id && selectedTimeSlot === timeSlot.id;
+                        
+                        return (
+                          <td 
+                            key={`${room.id}-${timeSlot.id}`} 
+                            className={`time-cell 
+                              ${isPast ? 'past' : isBooked ? 'booked' : 'available'} 
+                              ${isSelected ? 'selected' : ''}
+                            `}
+                            onClick={(e) => handleCellClick(room.id, timeSlot.id, e)}
+                            title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}
+                          >
+                            {isPast ? '-' : isBooked ? 'จองแล้ว' : 'ว่าง'}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </Fragment>
@@ -239,7 +290,6 @@ function App() {
               <div className="success-icon">✓</div>
               <h3>จองห้องเรียบร้อยแล้ว</h3>
               <p>ห้อง {selectedRoom} เวลา {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label}</p>
-              <p>ผู้จอง: {userName}</p>
               <p>รหัสนักศึกษา: {studentID}</p>
               <button 
                 className="done-button"
@@ -253,23 +303,24 @@ function App() {
               <h3>ห้อง {selectedRoom} เวลา {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label}</h3>
               <div className="user-info">
                 <h4>ข้อมูลผู้จอง</h4>
-                <input
-                  type="text"
-                  placeholder="ชื่อผู้จอง"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="รหัสนักศึกษา"
-                  value={studentID}
-                  onChange={(e) => setStudentID(e.target.value)}
-                  className="student-id-input"
-                />
+                <div className="input-container">
+                  <input
+                    type="text"
+                    placeholder="รหัสนักศึกษา 8 หลัก"
+                    value={studentID}
+                    onChange={(e) => setStudentID(e.target.value.trim())}
+                    maxLength={8}
+                    className={`student-id-input ${studentID.length > 0 && !isStudentIDValid ? 'invalid' : ''}`}
+                  />
+                  {studentID.length > 0 && !isStudentIDValid && 
+                    <div className="validation-message">รหัสนักศึกษาต้องมี 8 หลัก</div>
+                  }
+                </div>
               </div>
               <button 
                 className="book-button"
                 onClick={bookRoom}
+                disabled={!isStudentIDValid}
               >
                 จองห้อง
               </button>
