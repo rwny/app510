@@ -13,9 +13,9 @@ html, body {
 }
 
 #root {
-  max-width: 1280px;
+  max-width: 1000px; /* Reduced from 1280px */
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px; /* Reduced from 20px */
   text-align: center;
   background-color: #ffffff;
   display: flex;
@@ -61,9 +61,9 @@ html, body {
 
 /* Main styling */
 .booking-app {
-  max-width: 1200px;
+  max-width: 960px; /* Reduced from 1200px */
   margin: 0 auto;
-  padding: 10px;
+  padding: 8px; /* Reduced from 10px */
   font-family: 'Noto Sans', 'Kanit', 'Sarabun', sans-serif;
   background-color: #ffffff;
   color: #333333;
@@ -92,13 +92,14 @@ header {
 h1, h2, h3, h4 {
   margin-top: 0;
   color: #3a86ff;
+  margin-bottom: 5px; /* Add smaller bottom margin */
 }
 
 /* Date selector */
 .date-selector {
-  margin-bottom: 20px;
+  margin-bottom: 10px; /* Reduced from 20px */
   background-color: #f8f9fa;
-  padding: 10px;
+  padding: 8px; /* Reduced from 10px */
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
@@ -108,18 +109,23 @@ h1, h2, h3, h4 {
   gap: 5px;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .date-buttons button {
-  padding: 6px 8px;
+  padding: 4px 6px; /* Reduced from 6px 8px */
   background: #ffffff;
   border: 1px solid #e6e6e6;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
   color: #555555;
-  font-size: 0.85rem;
-  min-width: 80px;
+  font-size: 0.8rem; /* Reduced from 0.85rem */
+  min-width: 70px; /* Reduced from 80px */
+  flex: 1;
+  margin: 0 2px;
+  min-width: 0;
 }
 
 .date-buttons button:hover {
@@ -136,7 +142,7 @@ h1, h2, h3, h4 {
 .room-layout {
   position: static; /* Remove relative positioning */
   background-color: #f8f9fa;
-  padding: 12px;
+  padding: 8px; /* Reduced from 12px */
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   margin-bottom: 15px;
@@ -203,8 +209,8 @@ h1, h2, h3, h4 {
 
 /* Booking form */
 .booking-form {
-  margin-top: 15px;
-  padding: 15px;
+  margin-top: 12px; /* Reduced from 15px */
+  padding: 12px; /* Reduced from 15px */
   border: 1px solid #e6e6e6;
   border-radius: 8px;
   background-color: #f8f9fa;
@@ -217,12 +223,12 @@ h1, h2, h3, h4 {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px; /* Reduced from 15px */
 }
 
 .time-slot-selector, .user-info {
   background-color: #ffffff;
-  padding: 10px;
+  padding: 8px; /* Reduced from 10px */
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
@@ -292,7 +298,7 @@ h1, h2, h3, h4 {
 /* Table Layout - simplify scrolling */
 .room-table-container {
   overflow: visible; /* Remove auto scrolling constraint */
-  margin-top: 10px;
+  margin-top: 8px; /* Reduced from 10px */
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -306,7 +312,7 @@ h1, h2, h3, h4 {
 }
 
 .room-table th, .room-table td {
-  padding: 8px;
+  padding: 6px; /* Reduced from 8px */
   text-align: center;
   border: 1px solid #e6e6e6;
 }
@@ -365,8 +371,8 @@ h1, h2, h3, h4 {
 
 /* Adjust booking form for the new layout */
 .booking-form {
-  margin-top: 15px;
-  padding: 15px;
+  margin-top: 12px; /* Reduced from 15px */
+  padding: 12px; /* Reduced from 15px */
   border: 1px solid #e6e6e6;
   border-radius: 8px;
   background-color: #f8f9fa;
@@ -376,7 +382,7 @@ h1, h2, h3, h4 {
 .form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px; /* Reduced from 15px */
 }
 
 .form h3 {
@@ -391,6 +397,7 @@ h1, h2, h3, h4 {
   flex-direction: column;
   align-items: center;
   margin-bottom: 10px;
+  width: 100%;
 }
 
 .room-layout-header h2 {
@@ -404,11 +411,11 @@ h1, h2, h3, h4 {
   box-shadow: none;
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: space-between; /* Changed from center to space-between */
 }
 
 .room-layout-header .date-selector button {
-  padding: 5px 8px;
+  padding: 4px 6px; /* Reduced padding */
   background: #ffffff;
   border: 1px solid #e6e6e6;
   border-radius: 4px;
@@ -416,13 +423,9 @@ h1, h2, h3, h4 {
   transition: all 0.2s;
   color: #555555;
   font-size: 0.8rem;
-  min-width: 75px;
-}
-
-.room-layout-header .date-selector button.active {
-  background: #8ecae6;
-  color: #ffffff;
-  border-color: #8ecae6;
+  flex: 1; /* Make buttons grow to fill space */
+  margin: 0 2px; /* Add small margin between buttons */
+  min-width: 0; /* Remove min-width to allow buttons to shrink */
 }
 
 /* Booking success message */
@@ -538,10 +541,10 @@ h1, h2, h3, h4 {
 
 /* Create a container for dynamic content to prevent layout shifts */
 .dynamic-content {
-  min-height: 200px;
+  min-height: 150px; /* Reduced from 200px */
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
+  margin-top: 12px; /* Reduced from 20px */
 }
 
 /* Transposed Table Layout */
@@ -556,16 +559,16 @@ h1, h2, h3, h4 {
   background-color: #f8f9fa;
   font-weight: bold;
   text-align: center;
-  min-width: 100px;
+  min-width: 80px; /* Reduced from 100px */
 }
 
 .room-table.transposed .time-header {
   background-color: #f0f7ff;
   color: #3a86ff;
   font-weight: bold;
-  padding: 8px;
+  padding: 6px; /* Reduced from 8px */
   text-align: center;
-  min-width: 100px;
+  min-width: 80px; /* Reduced from 100px */
 }
 
 .room-table.transposed .floor-header-row {
@@ -585,14 +588,14 @@ h1, h2, h3, h4 {
   background-color: #f8f9fa;
   font-weight: bold;
   text-align: center;
-  padding: 8px;
+  padding: 6px; /* Reduced from 8px */
 }
 
 .room-table.transposed .time-cell {
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
-  padding: 8px;
+  padding: 6px; /* Reduced from 8px */
 }
 
 .room-table.transposed .time-cell.available {
@@ -619,6 +622,72 @@ h1, h2, h3, h4 {
   background-color: #8ecae6;
   color: white;
   font-weight: bold;
+}
+
+/* Transposed Table Layout - more compact */
+.room-table.transposed {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  table-layout: fixed; /* For better column sizing */
+}
+
+.room-table.transposed .building-header {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  text-align: center;
+  width: 60px; /* Reduced width for room column */
+}
+
+.room-table.transposed .time-header {
+  background-color: #f0f7ff;
+  color: #3a86ff;
+  font-weight: bold;
+  padding: 4px 2px; /* Further reduced padding */
+  text-align: center;
+  width: 45px; /* Exact width for time format "00-03" */
+  font-size: 0.75rem; /* Smaller font for time headers */
+}
+
+.room-table.transposed .room-cell-header {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  text-align: center;
+  padding: 4px 2px; /* Reduced padding */
+  font-size: 0.8rem; /* Slightly smaller font */
+}
+
+.room-table.transposed .time-cell {
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  padding: 4px 2px; /* Reduced padding */
+  font-size: 0.75rem; /* Smaller font size */
+}
+
+/* Highlighted headers */
+.room-table.transposed .highlighted-header {
+  background-color: #bfe6f5;
+  color: #1d6fa5;
+  border: 1px solid #8ecae6;
+  position: relative;
+  font-weight: bold;
+}
+
+.room-table.transposed .room-cell-header.highlighted-header::after {
+  content: '◀';
+  position: absolute;
+  right: 6px;
+  color: #219ebc;
+}
+
+.room-table.transposed .time-header.highlighted-header::after {
+  content: '▼';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #219ebc;
 }
 
 /* Responsive fixes for transposed table */

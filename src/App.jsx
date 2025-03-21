@@ -1,37 +1,17 @@
 import { useState, useEffect, useRef, Fragment } from 'react'
 import './App.css'
+// Import building data from external file
+import buildings, { getBuilding, getAllFloors, getAllRooms } from './data/buildings'
 
 function App() {
-  // Building information
+  // Set the current building (can be made dynamic in the future)
   const buildingID = 'AR15';
-  const buildingName = 'shop ดำ';
-
-  // Room data - reorganized by floor for better expansion
-  const floors = [
-    {
-      id: 1,
-      name: 'ชั้น 1',
-      rooms: [
-        { id: '101' },
-        { id: '102' },
-      ]
-    },
-    {
-      id: 2,
-      name: 'ชั้น 2',
-      rooms: [
-        { id: '201' },
-        { id: '202' },
-        { id: '203' },
-        { id: '204' },
-        { id: '205' },
-        { id: '206' },
-      ]
-    }
-  ];
-
-  // Get a flat list of all rooms for convenience
-  const allRooms = floors.flatMap(floor => floor.rooms);
+  const building = getBuilding(buildingID);
+  const buildingName = building.name;
+  
+  // Get floors and rooms for the current building
+  const floors = getAllFloors(buildingID);
+  const allRooms = getAllRooms(buildingID);
 
   // State management
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -205,7 +185,10 @@ function App() {
               <tr>
                 <th className="building-header">ห้อง</th>
                 {timeSlots.map(timeSlot => (
-                  <th key={timeSlot.id} className="time-header">
+                  <th 
+                    key={timeSlot.id} 
+                    className={`time-header ${selectedTimeSlot === timeSlot.id ? 'highlighted-header' : ''}`}
+                  >
                     {timeSlot.label}
                   </th>
                 ))}
@@ -221,11 +204,18 @@ function App() {
                   </tr>
                   {floor.rooms.map(room => (
                     <tr key={room.id} className="room-row">
-                      <td className="room-cell-header">ห้อง {room.id}</td>
+                      <td 
+                        className={`room-cell-header ${selectedRoom === room.id ? 'highlighted-header' : ''}`}
+                      >
+                        ห้อง {room.id}
+                      </td>
                       {timeSlots.map(timeSlot => (
                         <td 
                           key={`${room.id}-${timeSlot.id}`} 
-                          className={`time-cell ${isRoomBooked(room.id, selectedDate, timeSlot.id) ? 'booked' : 'available'} ${selectedRoom === room.id && selectedTimeSlot === timeSlot.id ? 'selected' : ''}`}
+                          className={`time-cell 
+                            ${isRoomBooked(room.id, selectedDate, timeSlot.id) ? 'booked' : 'available'} 
+                            ${selectedRoom === room.id && selectedTimeSlot === timeSlot.id ? 'selected' : ''}
+                          `}
                           onClick={(e) => handleCellClick(room.id, timeSlot.id, e)}
                           title={getBookingDetails(room.id, selectedDate, timeSlot.id)}
                         >
