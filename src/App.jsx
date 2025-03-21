@@ -5,6 +5,8 @@ import buildings, { getBuilding, getAllFloors, getAllRooms } from './data/buildi
 // Import components
 import TimeRoomTable from './components/TimeRoomTable'
 import BookingForm from './components/BookingForm'
+// Import utility functions
+import { formatDateForSheet, formatTimeForSheet, submitToGoogleSheets, fetchBookingsFromGoogleSheets } from './utils/googleSheetUtils'
 // • 
 function App() {
   // Set the current building (can be made dynamic in the future)
@@ -35,6 +37,13 @@ function App() {
   // State for floor plan modal
   const [showFloorPlan, setShowFloorPlan] = useState(false);
   
+  // Google Sheet Web App URL - replace with your deployed Google Apps Script web app URL
+  const googleSheetWebAppUrl = 'https://script.google.com/macros/s/AKfycby_1y8hMkG-DLzOU2dRls_a74vj8Udh3JUcTZ-W0FdYgxL-ZcXsH4hw_Wvd4ALe03x-8A/exec';
+  const formRef = useRef(null);
+
+  // Add loading state
+  const [isLoading, setIsLoading] = useState(true);
+
   // Generate available dates (today + 6 more days)
   const availableDates = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
@@ -97,19 +106,46 @@ function App() {
     
     const dateStr = selectedDate.toISOString().split('T')[0];
     
+    // Store booking in local state
     setBookings(prev => ({
       ...prev,
       [dateStr]: {
         ...(prev[dateStr] || {}),
         [selectedRoom]: {
           ...(prev[dateStr]?.[selectedRoom] || {}),
-          [selectedTimeSlot]: { studentID } // Store only student ID
+          [selectedTimeSlot]: { studentID }
         }
       }
     }));
     
-    // Show success message instead of alert
-    setBookingSuccess(true);
+    // Submit to Google Sheets with improved error handling
+    const timeSlot = timeSlots.find(slot => slot.id === selectedTimeSlot);
+    const timeSlotLabel = timeSlot ? timeSlot.label : '';
+    
+    const now = new Date();
+    const submissionData = {
+      date: dateStr,
+      buildingId: buildingID,
+      roomId: selectedRoom,
+      timeSlot: timeSlotLabel,
+      studentId: studentID,
+      submissionDate: formatDateForSheet(now),
+      submissionTime: formatTimeForSheet(now)
+    };
+    
+    // Use the utility function from googleSheetUtils.js
+    submitToGoogleSheets(googleSheetWebAppUrl, submissionData)
+      .then(() => {
+        console.log('Booking data submitted to Google Sheets');
+        // Show success message
+        setBookingSuccess(true);
+      })
+      .catch(error => {
+        console.error('Failed to submit to Google Sheets:', error);
+        // Still show booking success since local booking worked
+        setBookingSuccess(true);
+        // Optionally show a warning that cloud sync failed
+      });
   };
   
   // Reset booking form
@@ -213,6 +249,62 @@ function App() {
     window.scrollTo(0, 0);
   }, []);
 
+  // Fetch bookings from Google Sheets when component mounts
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchBookingsFromGoogleSheets(googleSheetWebAppUrl);
+        
+        if (data && Array.isArray(data)) {
+          // Process the booking data
+          const bookingsMap = {};
+          
+          data.forEach(booking => {
+            // Skip the header row if it's included
+            if (booking.studentId === 'Student ID') return;
+            
+            // Get relevant booking data
+            const bookingDate = booking.bookingDate;
+            const roomId = booking.roomId;
+            const timeSlotStr = booking.timeSlot;
+            const studentId = booking.studentId;
+            
+            // Find the timeSlot ID based on the label
+            const timeSlotObj = timeSlots.find(slot => slot.label === timeSlotStr);
+            if (!timeSlotObj) return; // Skip if timeSlot not found
+            
+            const timeSlotId = timeSlotObj.id;
+            
+            // Initialize nested objects if they don't exist
+            if (!bookingsMap[bookingDate]) {
+              bookingsMap[bookingDate] = {};
+            }
+            if (!bookingsMap[bookingDate][roomId]) {
+              bookingsMap[bookingDate][roomId] = {};
+            }
+            
+            // Add the booking
+            bookingsMap[bookingDate][roomId][timeSlotId] = { 
+              studentID: studentId,
+              // Add other booking details as needed
+            };
+          });
+          
+          // Update bookings state
+          setBookings(bookingsMap);
+        }
+      } catch (error) {
+        console.error('Failed to load bookings:', error);
+        // Optionally show an error message to the user
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBookings();
+  }, [googleSheetWebAppUrl]); // Only re-run if the URL changes
+
   return (
     <div className="booking-app" ref={appRef}>
       {/* Floating notification */}
@@ -303,6 +395,13 @@ function App() {
           buildingID={buildingID}      // Added building ID prop
         />
       </div>
+
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p>กำลังโหลดข้อมูลการจอง...</p>
+        </div>
+      )}
     </div>
   )
 }

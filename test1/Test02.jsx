@@ -57,15 +57,17 @@ export default function Test02() {
     
     // Prepare data for submission
     const submissionData = {
-      // timestamp: formattedTimestamp,
-      date: formattedDate,
-      time: formattedTime,
       id,
       comment,
+      date: formattedDate,
+      time: formattedTime
     };
     
     // Update debug info
     setDebugInfo(submissionData);
+    
+    // Ensure form data is properly encoded for Google Apps Script
+    form.enctype = "application/x-www-form-urlencoded";
     
     createOrUpdateHiddenInput('id', id);
     createOrUpdateHiddenInput('comment', comment);
@@ -131,8 +133,6 @@ export default function Test02() {
             cursor: isSubmitting ? 'not-allowed' : 'pointer'
           }}
         >
-          {isSubmitting ? 'Submitting...' : 'Submit'}
-        </button>
 
         {message && (
           <div style={{
