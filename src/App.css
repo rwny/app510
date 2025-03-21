@@ -1148,6 +1148,53 @@ h1, h2, h3, h4 {
   100% { transform: rotate(360deg); }
 }
 
+/* Make selected cells more visible with better contrast - revised */
+.room-table.transposed .time-cell.selected {
+  background-color: #0052e0; /* Consistent blue background */
+  color: white;
+  font-weight: bold;
+  box-shadow: inset 0 0 0 2px #ffffff; /* Simple white inner border */
+  position: relative;
+  z-index: 2; /* Bring selected cell forward */
+  transform: none; /* Remove scale effect */
+  text-shadow: none; /* Remove text shadow */
+  border-radius: 4px; /* Rounded corners */
+}
+
+/* Apply the same color for hover state to ensure consistency */
+.room-table.transposed .time-cell.selected:hover {
+  background-color: #0052e0; /* Same as non-hover selected state */
+}
+
+/* Special mobile adjustments for selected cells - simplified */
+@media (max-width: 576px) {
+  .room-table.transposed .time-cell.selected {
+    background-color: #0052e0; /* Use same color as desktop */
+    box-shadow: inset 0 0 0 2px #ffffff; /* White inner border */
+    font-size: 0.85rem; /* Slightly larger text but not too large */
+    padding: 6px 2px; /* Larger padding for better touch target */
+  }
+  
+  /* Keep checkmark indicator but make it more subtle */
+  .room-table.transposed .time-cell.selected::after {
+    content: '✓'; /* Checkmark indicator */
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background-color: #ffffff; /* White background */
+    color: #0052e0; /* Blue text matching selection */
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    z-index: 3;
+    border: 1px solid #0052e0; /* Border matching the cell color */
+  }
+}
+
 /* Make selected cells more visible with better contrast */
 .room-table.transposed .time-cell.selected {
   background-color: #0059ff; /* Darker blue background for better contrast */
