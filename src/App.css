@@ -1147,3 +1147,44 @@ h1, h2, h3, h4 {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Make selected cells more visible with better contrast */
+.room-table.transposed .time-cell.selected {
+  background-color: #0059ff; /* Darker blue background for better contrast */
+  color: white;
+  font-weight: bold;
+  box-shadow: inset 0 0 0 3px #003eb3, 0 0 0 1px #ffffff; /* Double border effect */
+  position: relative;
+  z-index: 2; /* Bring selected cell forward */
+  transform: scale(1.05); /* Slightly enlarge selected cell */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5); /* Text shadow for better readability */
+  border-radius: 4px; /* Rounded corners */
+}
+
+/* Special mobile adjustments for selected cells */
+@media (max-width: 576px) {
+  .room-table.transposed .time-cell.selected {
+    background-color: #003eb3; /* Even darker blue on mobile */
+    box-shadow: inset 0 0 0 2px #ffffff, 0 0 0 1px #001f5a; /* White inner border for more contrast */
+    font-size: 0.9rem; /* Slightly larger text on mobile when selected */
+    padding: 6px 2px; /* Larger padding for better touch target */
+  }
+  
+  /* Add a visual marker for selected cells on small screens */
+  .room-table.transposed .time-cell.selected::after {
+    content: '✓'; /* Checkmark indicator */
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ffcc00; /* Bright marker color */
+    color: #000000; /* Black text */
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    font-size: 10px;
+    line-height: 15px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    z-index: 3;
+  }
+}
