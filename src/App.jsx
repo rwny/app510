@@ -309,7 +309,7 @@ function App() {
             <button className="close-button" onClick={() => setShowFloorPlan(false)}>×</button>
             <h3>แผนผังอาคาร {buildingName}</h3>
             <div className="floor-plan-image-container">
-              <img src="./src/assets/plan1.png" alt="Floor Plan" className="floor-plan-image" />
+              <img src="./plan1.png" alt="Floor Plan" className="floor-plan-image" />
             </div>
           </div>
         </div>
