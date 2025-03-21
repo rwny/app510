@@ -513,29 +513,24 @@ h1, h2, h3, h4 {
 .booking-success.compact {
   flex-direction: row;
   text-align: left;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to better align content */
   justify-content: space-between;
   flex-wrap: wrap;
+  padding: 15px; /* Reduced padding */
+  gap: 10px; /* Add gap between elements */
 }
 
-.booking-success .success-icon {
-  height: 40px; /* Reduced from 60px */
-  width: 40px; /* Reduced from 60px */
-  border-radius: 50%;
-  background-color: #28a745;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px; /* Reduced from 30px */
-  margin: 0; /* Removed margin */
-  flex-shrink: 0;
+.booking-success.compact .success-icon {
+  margin-top: 5px; /* Add small top margin to better align with text */
 }
 
 .booking-success.compact .success-details {
   flex: 1;
   padding: 0 10px;
-  min-width: 200px;
+  min-width: 0; /* Allow container to shrink below its content size */
+  max-width: 100%;
+  word-break: break-word; /* Enable word breaking for long text */
+  overflow: hidden; /* Hide overflow */
 }
 
 .booking-success h3 {
@@ -548,9 +543,11 @@ h1, h2, h3, h4 {
   margin: 3px 0; /* Reduced from 5px */
   color: #333333;
   font-size: 0.9rem; /* Smaller font size */
+  white-space: normal; /* Allow text to wrap */
+  overflow-wrap: break-word; /* Break words that would overflow */
 }
 
-.done-button {
+.booking-success .done-button {
   padding: 8px 15px; /* Reduced from 10px 20px */
   background: #28a745;
   color: white;
@@ -561,6 +558,29 @@ h1, h2, h3, h4 {
   margin-top: 0; /* Removed margin */
   transition: background 0.2s;
   flex-shrink: 0;
+  margin-left: auto; /* Push button to right when on same row as content */
+  align-self: flex-start; /* Align to top when wrapped to new row */
+}
+
+/* Add responsive adjustments to handle small screens better */
+@media (max-width: 480px) {
+  .booking-success.compact {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    padding: 12px;
+  }
+  
+  .booking-success.compact .success-details {
+    width: 100%;
+    padding: 5px 0;
+    text-align: center;
+  }
+  
+  .booking-success .done-button {
+    margin: 8px auto 0;
+    width: 100%; /* Make button full width on very small screens */
+  }
 }
 
 /* Floating notification */
