@@ -330,7 +330,14 @@ h1, h2, h3, h4 {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   max-height: none; /* Remove height constraint */
-  overflow-x: auto;
+  overflow-x: auto; /* Always enable horizontal scrolling */
+  overflow-y: visible;
+  /* Ensure min width to allow scrolling */
+  min-width: 100%;
+  /* Fix WebKit momentum scrolling for mobile */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent content from being cut off */
+  padding-bottom: 5px;
 }
 
 .room-table {
@@ -629,6 +636,7 @@ h1, h2, h3, h4 {
   border-collapse: collapse;
   font-size: 0.85rem;
   table-layout: fixed; /* For better column sizing */
+  min-width: 600px; /* Ensure table is wide enough regardless of screen size */
 }
 
 .room-table.transposed .building-header {
@@ -946,4 +954,55 @@ h1, h2, h3, h4 {
   max-width: 100%;
   max-height: 70vh;
   object-fit: contain;
+}
+
+/* Improve mobile experience */
+@media (max-width: 576px) {
+  /* Adjust heading for small screens */
+  .room-layout-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  /* More compact time headers on mobile */
+  .room-table.transposed .time-header {
+    padding: 3px 1px;
+    font-size: 0.7rem;
+    width: 35px; /* Even smaller for mobile */
+  }
+  
+  /* Ensure hint is visible to scroll */
+  .room-table-container::after {
+    content: '← scroll →';
+    display: block;
+    text-align: center;
+    color: #aaa;
+    font-size: 0.7rem;
+    margin-top: 5px;
+    position: sticky;
+    left: 0;
+    right: 0;
+  }
+  
+  /* Make bubble indicators less intrusive on small screens */
+  .room-table.transposed .room-cell-header.highlighted-header::before,
+  .room-table.transposed .room-cell-header.highlighted-header::after,
+  .room-table.transposed .time-header.highlighted-header::before,
+  .room-table.transposed .time-header.highlighted-header::after {
+    border-width: 6px; /* Smaller triangles */
+  }
+}
+
+/* Prevent html/body from blocking overflow */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: auto !important;
+  }
+  
+  #root {
+    overflow-x: visible;
+  }
+  
+  .booking-app {
+    overflow-x: visible;
+  }
 }
