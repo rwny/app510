@@ -17,6 +17,15 @@ function BookingForm({
   buildingID,
   isSubmitting // Add new prop
 }) {
+  // Function to handle student ID input - accept only numbers
+  const handleStudentIDChange = (e) => {
+    const value = e.target.value;
+    // Remove any non-numeric characters
+    const numericValue = value.replace(/\D/g, '');
+    // Update state with numeric value only
+    setStudentID(numericValue);
+  };
+
   return (
     <section className="booking-form">
       {bookingSuccess ? (
@@ -41,15 +50,17 @@ function BookingForm({
             <h4>ข้อมูลผู้จอง</h4>
             <div className="input-container">
               <input
-                type="text"
+                type="tel" // Changed from text to tel for better numeric keyboard on mobile
+                inputMode="numeric" // Ensures numeric keyboard on modern browsers
+                pattern="[0-9]*" // HTML5 pattern for numbers only
                 placeholder="รหัสนักศึกษา 8 หลัก"
                 value={studentID}
-                onChange={(e) => setStudentID(e.target.value.trim())}
+                onChange={handleStudentIDChange} // Use our custom handler instead
                 maxLength={8}
                 className={`student-id-input ${studentID.length > 0 && !isStudentIDValid ? 'invalid' : ''}`}
               />
               {studentID.length > 0 && !isStudentIDValid && 
-                <div className="validation-message">รหัสนักศึกษาต้องมี 8 หลัก</div>
+                <div className="validation-message">รหัสนักศึกษา 8 หลัก</div>
               }
             </div>
           </div>
@@ -58,7 +69,7 @@ function BookingForm({
             onClick={bookRoom}
             disabled={!isStudentIDValid || isSubmitting} // Disable button when submitting
           >
-            {isSubmitting ? 'กำลังบันทึกข้อมูล...' : 'จองห้อง'}
+            {isSubmitting ? 'กำลังตรวจสอบข้อมูล...' : 'จองห้อง'}
           </button>
         </div>
       ) : (

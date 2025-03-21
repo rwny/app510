@@ -25,7 +25,15 @@ export const submitToGoogleSheets = (scriptUrl, data) => {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = key;
-        input.value = value;
+        
+        // Ensure all values are text strings with the single quote prefix
+        // This forces Google Sheets to treat them as text
+        if (typeof value === 'string' && !value.startsWith("'")) {
+          input.value = `'${value}`;
+        } else {
+          input.value = value;
+        }
+        
         form.appendChild(input);
       });
       

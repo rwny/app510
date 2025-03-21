@@ -38,7 +38,7 @@ function App() {
   const [showFloorPlan, setShowFloorPlan] = useState(false);
   
   // Google Sheet Web App URL - replace with your deployed Google Apps Script web app URL
-  const googleSheetWebAppUrl = 'https://script.google.com/macros/s/AKfycbwbnobxMj8svZT7pFqlt3UqbKk_73GmM_kHVOrFHFhz_b3YKTKBjL4U6abj6O0KsqaTnA/exec';
+  const googleSheetWebAppUrl = 'https://script.google.com/macros/s/AKfycbzS4qdlJ9q0EblfSxeimaMcmocjGAHmEz0ja3LYdDKpjURSMmyD3cNoAp7YY60W35cH6Q/exec';
   const formRef = useRef(null);
 
   // Add loading state
@@ -111,9 +111,10 @@ function App() {
     // Set submitting state to true
     setIsSubmitting(true);
     
+    // Use toISOString for local state, but use formatDateForSheet for Google Sheets submission
     const dateStr = selectedDate.toISOString().split('T')[0];
     
-    // Store booking in local state
+    // Store booking in local state using the local date format
     setBookings(prev => ({
       ...prev,
       [dateStr]: {
@@ -127,15 +128,18 @@ function App() {
     
     // Submit to Google Sheets with improved error handling
     const timeSlot = timeSlots.find(slot => slot.id === selectedTimeSlot);
-    const timeSlotLabel = timeSlot ? timeSlot.label : '';
+    
+    // Format the booking date using the same function used for submission date
+    // This ensures consistent date handling in Google Sheets
+    const formattedBookingDate = formatDateForSheet(selectedDate);
     
     const now = new Date();
     const submissionData = {
-      date: dateStr,
-      buildingId: buildingID,
-      roomId: selectedRoom,
-      timeSlot: timeSlotLabel,
       studentId: studentID,
+      buildingId: buildingID,
+      roomId: selectedRoom, 
+      timeSlot: timeSlot ? `ts.${timeSlot.label}` : `'00-00`,
+      date: formattedBookingDate, // Use the formatted date function instead of dateStr
       submissionDate: formatDateForSheet(now),
       submissionTime: formatTimeForSheet(now)
     };
