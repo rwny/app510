@@ -7,8 +7,9 @@ html, body {
   padding: 0;
   background-color: #ffffff;
   font-family: 'Noto Sans', 'Kanit', 'Sarabun', sans-serif;
+  overflow-y: auto; /* Allow vertical scrolling */
   overflow-x: hidden;
-  height: 100%;
+  height: auto; /* Let content determine height */
 }
 
 #root {
@@ -19,7 +20,7 @@ html, body {
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: auto; /* Let content determine height */
 }
 
 .logo {
@@ -131,11 +132,9 @@ h1, h2, h3, h4 {
   border-color: #8ecae6;
 }
 
-/* Room layout */
+/* Room layout - make it simple with no positioning effects */
 .room-layout {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  position: static; /* Remove relative positioning */
   background-color: #f8f9fa;
   padding: 12px;
   border-radius: 8px;
@@ -290,13 +289,14 @@ h1, h2, h3, h4 {
   background: #219ebc;
 }
 
-/* Table Layout */
+/* Table Layout - simplify scrolling */
 .room-table-container {
-  overflow-x: auto;
+  overflow: visible; /* Remove auto scrolling constraint */
   margin-top: 10px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  max-height: none; /* Remove height constraint */
 }
 
 .room-table {
@@ -549,6 +549,7 @@ h1, h2, h3, h4 {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
+  table-layout: fixed; /* For better column sizing */
 }
 
 .room-table.transposed .building-header {
