@@ -58,7 +58,7 @@ function TimeRoomTable({
                         onClick={(e) => handleCellClick(room.id, timeSlot.id, e)}
                         title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}
                       >
-                        {isPast ? '-' : isBooked ? '•' : 'ว่าง'}  
+                        {isPast ? '-' : isBooked ? 'จองแล้ว' : 'ว่าง'}  
                         {/* •  */}
                       </td>
                     );

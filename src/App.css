@@ -1026,3 +1026,94 @@ h1, h2, h3, h4 {
     overflow-x: visible;
   }
 }
+
+/* Add alternating row colors for better readability */
+.room-table.transposed .room-row:nth-child(odd) {
+  background-color: rgba(248, 249, 250, 0.5); /* Light gray for odd rows */
+}
+
+.room-table.transposed .room-row:nth-child(even) {
+  background-color: rgba(236, 242, 248, 0.5); /* Light blue-gray for even rows */
+}
+
+/* Ensure cell types (available, booked, selected) still stand out */
+.room-table.transposed .time-cell.available {
+  background-color: #e8f4f8;
+  color: #219ebc;
+}
+
+.room-table.transposed .time-cell.booked {
+  background-color: #ffefed;
+  color: #e76f51;
+}
+
+.room-table.transposed .time-cell.selected {
+  background-color: #8ecae6;
+  color: white;
+  font-weight: bold;
+}
+
+.room-table.transposed .time-cell.past {
+  background-color: #f1f1f1;
+  color: #aaaaaa;
+}
+
+/* Improve room header visibility with alternating colors */
+.room-table.transposed .room-row:nth-child(odd) .room-cell-header {
+  background-color: #f5f7f9; /* Slightly different shade for odd row headers */
+}
+
+.room-table.transposed .room-row:nth-child(even) .room-cell-header {
+  background-color: #edf3fa; /* Slightly different shade for even row headers */
+}
+
+/* Ensure highlighted headers still look distinctive */
+.room-table.transposed .room-cell-header.highlighted-header {
+  background-color: #bfe6f5 !important; /* Override alternating colors when highlighted */
+  color: #1d6fa5;
+  border: 1px solid #8ecae6;
+}
+
+/* Add alternating row colors with stronger contrast */
+.room-table.transposed .room-row:nth-child(odd) {
+  background-color: #f8f9fa; /* Light gray for odd rows - more solid color */
+}
+
+.room-table.transposed .room-row:nth-child(even) {
+  background-color: #e2eaf7; /* Stronger blue-gray for even rows */
+}
+
+/* Add subtle borders to enhance row separation */
+.room-table.transposed .room-row td {
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Make cell states stand out more from alternating backgrounds */
+.room-table.transposed .time-cell.available {
+  background-color: #d6f0f8; /* Lighter blue */
+  color: #0e7490; /* Darker text for contrast */
+  font-weight: 500;
+}
+
+.room-table.transposed .time-cell.booked {
+  background-color: #ffcdc5; /* Brighter booked color */
+  color: #c1391f; /* Darker red text */
+  font-weight: 600; /* Bold text */
+}
+
+.room-table.transposed .time-cell.selected {
+  background-color: #3a86ff; /* Brighter selection color */
+  color: white;
+  font-weight: bold;
+  box-shadow: inset 0 0 0 2px #0059ff; /* Inner glow for selected cell */
+}
+
+/* Improve header contrast in alternating rows */
+.room-table.transposed .room-row:nth-child(odd) .room-cell-header {
+  background-color: #eef0f2; /* Enhanced contrast for odd row headers */
+}
+
+.room-table.transposed .room-row:nth-child(even) .room-cell-header {
+  background-color: #d6e0f0; /* Enhanced contrast for even row headers */
+}
