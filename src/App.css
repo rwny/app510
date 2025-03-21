@@ -730,7 +730,9 @@ h1, h2, h3, h4 {
 .room-table.transposed .time-cell.past {
   background-color: #f1f1f1;
   color: #aaaaaa;
-  cursor: not-allowed;
+  cursor: default; /* Changed from not-allowed to default */
+  opacity: 0.7; /* Make it more visibly disabled */
+  pointer-events: none; /* Completely prevent interaction */
 }
 
 .room-table.transposed .time-cell.past:hover {

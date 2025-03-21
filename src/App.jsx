@@ -128,21 +128,9 @@ function App() {
 
   // Cell click handler
   const handleCellClick = (roomId, timeSlotId, event) => {
-    // Don't allow booking past time slots
+    // Simply return early for past time slots - no notification needed
     if (isTimeSlotPast(selectedDate, timeSlotId)) {
-      const rect = event.currentTarget.getBoundingClientRect();
-      setNotification({
-        show: true,
-        message: 'ไม่สามารถจองเวลาที่ผ่านไปแล้ว',
-        x: rect.left + window.scrollX,
-        y: rect.top + window.scrollY
-      });
-      
-      setTimeout(() => {
-        setNotification(prev => ({ ...prev, show: false }));
-      }, 3000);
-      
-      return;
+      return; // No notification, just do nothing
     }
     
     if (isRoomBooked(roomId, selectedDate, timeSlotId)) {
@@ -284,12 +272,13 @@ function App() {
       
       <div className="dynamic-content">
         <section className="booking-form">
-          <h2>จองห้อง</h2>
+          {/* <h2>จองห้อง</h2> */}
           {bookingSuccess ? (
             <div className="booking-success">
               <div className="success-icon">✓</div>
               <h3>จองห้องเรียบร้อยแล้ว</h3>
               <p>ห้อง {selectedRoom} เวลา {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label}</p>
+              <p>วันที่ {formatDate(selectedDate)}</p>
               <p>รหัสนักศึกษา: {studentID}</p>
               <button 
                 className="done-button"
@@ -300,7 +289,7 @@ function App() {
             </div>
           ) : selectedRoom ? (
             <div className="form">
-              <h3>ห้อง {selectedRoom} เวลา {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label}</h3>
+              <h3>ห้อง {selectedRoom} -- เวลา {timeSlots.find(slot => slot.id === selectedTimeSlot)?.label} -- วันที่ {formatDate(selectedDate)}</h3>
               <div className="user-info">
                 <h4>ข้อมูลผู้จอง</h4>
                 <div className="input-container">
