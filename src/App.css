@@ -330,6 +330,7 @@ h1, h2, h3, h4 {
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   max-height: none; /* Remove height constraint */
+  overflow-x: auto;
 }
 
 .room-table {
