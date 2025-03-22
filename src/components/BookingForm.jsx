@@ -20,13 +20,30 @@ const BookingForm = ({
   
   if (bookingSuccess) {
     return (
-      <div className="booking-form">
-        <div className="booking-success">
-          <div>
-            <strong>จองห้องเรียนสำเร็จ!</strong>
-            <p>ห้อง {selectedRoom} วันที่ {formatDate(selectedDate)} เวลา {formatTimeSlotLong(selectedTimeSlot)}</p>
+      <div className="booking-form fixed-height">
+        <div className="booking-form-grid">
+          <div className="booking-details">
+            <div className="booking-info-row">
+              <span className="success-badge">จองห้องเรียนสำเร็จ!</span>
+              <span>ห้อง {selectedRoom}</span>
+              <span>เวลา {formatTimeSlotLong(selectedTimeSlot)}</span>
+              <span>วันที่ {formatDate(selectedDate)}</span>
+            </div>
           </div>
-          <button onClick={resetBookingForm} className="book-button">
+          
+          <div className="user-info">
+            <input
+              type="text"
+              value={studentID}
+              disabled={true}
+              readOnly
+            />
+          </div>
+          
+          <button
+            onClick={resetBookingForm}
+            className="book-button success-button"
+          >
             เสร็จสิ้น
           </button>
         </div>
@@ -35,16 +52,14 @@ const BookingForm = ({
   }
 
   return (
-    <div className="booking-form">
+    <div className="booking-form fixed-height">
       <div className="booking-form-grid">
         <div className="booking-details">
-          {selectedRoom && (
-            <strong>ห้อง {selectedRoom}</strong>
-          )}
-          {selectedTimeSlot !== null && (
-            <div>เวลา {formatTimeSlotLong(selectedTimeSlot)}</div>
-          )}
-          <div>วันที่ {formatDate(selectedDate)}</div>
+          <div className="booking-info-row">
+            {selectedRoom ? <span>ห้อง {selectedRoom}</span> : <span className="placeholder-info">โปรดเลือกห้อง</span>}
+            {selectedTimeSlot !== null ? <span>เวลา {formatTimeSlotLong(selectedTimeSlot)}</span> : <span className="placeholder-info">โปรดเลือกเวลา</span>}
+            <span>วันที่ {formatDate(selectedDate)}</span>
+          </div>
         </div>
         
         <div className="user-info">
