@@ -63,7 +63,7 @@ function TimeRoomTable({
                           overflow: 'hidden'        // Prevent content from spilling out
                         }}
                       >
-                        {isPast ? '•' : isBooked ? '•' : 'ว่าง'}  
+                        {isPast ? '•' : isBooked ? '-' : 'ว่าง'}  
                         {/* •  */}
                       </td>
                     );

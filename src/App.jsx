@@ -269,9 +269,9 @@ function App() {
       const rect = event.currentTarget.getBoundingClientRect();
       setNotification({
         show: true,
-        message: 'กรุณากดปุ่ม "เสร็จสิ้น" ก่อนเลือกห้องใหม่',
-        x: rect.left + window.scrollX,
-        y: rect.top + window.scrollY
+        message: 'Press "Accept ก่อนเลือกห้องใหม่"',
+        x: rect.left + (rect.width / 2) + window.scrollX, // Center horizontally
+        y: rect.top + window.scrollY // Position above the cell
       });
       
       setTimeout(() => {
@@ -287,19 +287,19 @@ function App() {
     }
     
     if (isRoomBooked(roomId, selectedDate, timeSlotId)) {
-      // Show floating notification instead of alert
+      // Show floating notification with improved positioning
       const rect = event.currentTarget.getBoundingClientRect();
       setNotification({
         show: true,
         message: 'ห้องนี้ถูกจองแล้ว ไม่สามารถจองได้',
-        x: rect.left + window.scrollX,
-        y: rect.top + window.scrollY
+        x: rect.left + (rect.width / 2) + window.scrollX, // Center horizontally
+        y: rect.top + window.scrollY // Position above the cell
       });
       
       // Hide notification after 3 seconds
       setTimeout(() => {
         setNotification(prev => ({ ...prev, show: false }));
-      }, 3000);
+      }, 500);
       
       return;
     }
@@ -622,19 +622,54 @@ function App() {
             </button>
           </h2>
           
+          
+          {/* Booking Form Component - now directly in the booking-app div without the dynamic-content wrapper */}
+          <BookingForm
+            bookingSuccess={bookingSuccess}
+            selectedRoom={selectedRoom}
+            selectedTimeSlot={selectedTimeSlot}
+            selectedDate={selectedDate}
+            studentID={studentID}
+            timeSlots={timeSlots}
+            formatDate={formatDate}
+            formatTimeSlotLong={formatTimeSlotLong}
+            isStudentIDValid={isStudentIDValid}
+            setStudentID={setStudentID}
+            bookRoom={bookRoom}
+            resetBookingForm={resetBookingForm}
+            buildingName={buildingName}
+            buildingID={buildingID}
+            isSubmitting={isSubmitting}
+          />
+
+
+
           <div className="date-selector">
-            {availableDates.map((date) => (
-              <button 
-                key={date.toISOString()} 
-                onClick={() => setSelectedDate(date)}
-                className={selectedDate.toISOString().split('T')[0] === date.toISOString().split('T')[0] ? 'active' : ''}
-              >
-                {formatDate(date)}
-              </button>
-            ))}
+            <table className="date-table">
+              <tbody>
+                <tr>
+                  {availableDates.map((date) => (
+                    <td 
+                      key={date.toISOString()} 
+                      onClick={() => setSelectedDate(date)}
+                      className={
+                        selectedDate.toISOString().split('T')[0] === date.toISOString().split('T')[0]
+                          ? 'active'
+                          : ''
+                      }
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {formatDate(date)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
         
+
+
         {/* Time Room Table Component */}
         <TimeRoomTable 
           floors={floors}
@@ -663,26 +698,6 @@ function App() {
         </div>
       )}
       
-      <div className="dynamic-content">
-        {/* Booking Form Component */}
-        <BookingForm
-          bookingSuccess={bookingSuccess}
-          selectedRoom={selectedRoom}
-          selectedTimeSlot={selectedTimeSlot}
-          selectedDate={selectedDate}
-          studentID={studentID}
-          timeSlots={timeSlots}
-          formatDate={formatDate}
-          formatTimeSlotLong={formatTimeSlotLong} // Add the new formatter
-          isStudentIDValid={isStudentIDValid}
-          setStudentID={setStudentID}
-          bookRoom={bookRoom}
-          resetBookingForm={resetBookingForm}
-          buildingName={buildingName}  // Added building name prop
-          buildingID={buildingID}      // Added building ID prop
-          isSubmitting={isSubmitting} // Add the new state variable
-        />
-      </div>
 
       {isLoading && (
         <div className="loading-overlay">
