@@ -650,8 +650,6 @@ function App() {
           </div>
         </div>
         
-
-
         {/* Time Room Table Component */}
         <TimeRoomTable 
           floors={floors}
@@ -704,7 +702,7 @@ function App() {
       {isLoading && (
         <div className="loading-overlay">
           <div className="loading-spinner"></div>
-          <p>กำลังโหลดข้อมูลการจอง...</p>
+          <p>Loading...</p>
         </div>
       )}
 
