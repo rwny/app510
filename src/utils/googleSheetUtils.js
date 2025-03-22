@@ -103,25 +103,57 @@ export const getBangkokISOString = (date = new Date()) => {
 /**
  * Fetch booking data from Google Sheets
  * @param {string} scriptUrl - The Google Apps Script web app URL
- * @returns {Promise<Array>} - Promise resolving to an empty array (disabled)
+ * @returns {Promise<Array>} - Promise resolving to an array of booking objects
  */
-export const fetchBookingsFromGoogleSheets = async (scriptUrl) => {
-  // DISABLED: Return empty array immediately without attempting to fetch data
-  console.log('Data fetching from Google Sheets is disabled. Returning empty array.');
-  return [];
-  
-  // The original implementation is commented out below:
-  /*
+export const fetchBookingsFromGoogleSheets = async (url) => {
   try {
-    console.log('Attempting to fetch bookings from Google Sheets:', scriptUrl);
+    console.log('Sending fetch request to:', `${url}?action=getBookings`);
     
-    // Use the same iframe/form approach that works for POST requests
-    return new Promise((resolve, reject) => {
-      // ...existing code...
-    });
+    // Add a cache-busting parameter to prevent browser caching
+    const cacheBuster = new Date().getTime();
+    const response = await fetch(`${url}?action=getBookings&_=${cacheBuster}`);
+    
+    console.log('Received response with status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const jsonResponse = await response.json();
+    console.log('Successfully parsed JSON response');
+    console.log('Response from Google Apps Script:', jsonResponse);
+    
+    if (jsonResponse.timestamp) {
+      console.log('Server timestamp:', jsonResponse.timestamp);
+    } else {
+      console.warn('No timestamp in response');
+    }
+    
+    // Add detailed debugging for data
+    if (jsonResponse.data) {
+      console.log(`Data is an array: ${Array.isArray(jsonResponse.data)}`);
+      console.log(`Data length: ${jsonResponse.data.length}`);
+      
+      if (jsonResponse.data.length > 0) {
+        console.log('First 3 items in data:', 
+          jsonResponse.data.slice(0, 3).map(item => JSON.stringify(item)));
+        
+        // Log all property names from first item to help debug camelCase issues
+        const firstItem = jsonResponse.data[0];
+        if (firstItem) {
+          console.log('Properties in first item:', Object.keys(firstItem));
+          console.log('First item values:', Object.values(firstItem));
+        }
+      }
+    } else {
+      console.warn('No data property in response');
+    }
+    
+    // Return the actual bookings data
+    return jsonResponse.data || [];
   } catch (error) {
-    console.error('Error in fetchBookingsFromGoogleSheets:', error);
-    return [];
+    console.error('Error details:', error);
+    console.error('Error fetching from Google Sheets:', error.message);
+    throw error;
   }
-  */
 };
