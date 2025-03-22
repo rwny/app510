@@ -622,25 +622,7 @@ function App() {
             </button>
           </h2>
           
-          
-          {/* Booking Form Component - now directly in the booking-app div without the dynamic-content wrapper */}
-          <BookingForm
-            bookingSuccess={bookingSuccess}
-            selectedRoom={selectedRoom}
-            selectedTimeSlot={selectedTimeSlot}
-            selectedDate={selectedDate}
-            studentID={studentID}
-            timeSlots={timeSlots}
-            formatDate={formatDate}
-            formatTimeSlotLong={formatTimeSlotLong}
-            isStudentIDValid={isStudentIDValid}
-            setStudentID={setStudentID}
-            bookRoom={bookRoom}
-            resetBookingForm={resetBookingForm}
-            buildingName={buildingName}
-            buildingID={buildingID}
-            isSubmitting={isSubmitting}
-          />
+
 
 
 
@@ -650,15 +632,15 @@ function App() {
                 <tr>
                   {availableDates.map((date) => (
                     <td 
-                      key={date.toISOString()} 
+                    key={date.toISOString()} 
                       onClick={() => setSelectedDate(date)}
                       className={
                         selectedDate.toISOString().split('T')[0] === date.toISOString().split('T')[0]
-                          ? 'active'
+                        ? 'active'
                           : ''
-                      }
-                      style={{ cursor: 'pointer' }}
-                    >
+                        }
+                        style={{ cursor: 'pointer' }}
+                        >
                       {formatDate(date)}
                     </td>
                   ))}
@@ -698,6 +680,26 @@ function App() {
         </div>
       )}
       
+      <p></p>
+      {/* Booking Form Component - now directly in the booking-app div without the dynamic-content wrapper */}
+      <BookingForm
+        bookingSuccess={bookingSuccess}
+        selectedRoom={selectedRoom}
+        selectedTimeSlot={selectedTimeSlot}
+        selectedDate={selectedDate}
+        studentID={studentID}
+        timeSlots={timeSlots}
+        formatDate={formatDate}
+        formatTimeSlotLong={formatTimeSlotLong}
+        isStudentIDValid={isStudentIDValid}
+        setStudentID={setStudentID}
+        bookRoom={bookRoom}
+        resetBookingForm={resetBookingForm}
+        buildingName={buildingName}
+        buildingID={buildingID}
+        isSubmitting={isSubmitting}
+      />
+
 
       {isLoading && (
         <div className="loading-overlay">
