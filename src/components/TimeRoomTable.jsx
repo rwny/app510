@@ -90,14 +90,8 @@ function TimeRoomTable({
                           }
                         }}
                         title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}
-                        style={{
-                          boxSizing: 'border-box',  // This ensures borders are included in the element's dimensions
-                          position: 'relative',     // For the pseudo-elements if you're using them for highlighting
-                          overflow: 'hidden'        // Prevent content from spilling out
-                        }}
                       >
-                        {isPast ? '•' : isBooked ? '-' : 'ว่าง'}  
-                        {/* •  */}
+                        {isPast ? '-' : isBooked ? '-' : 'ว่าง'}  
                       </td>
                     );
                   })}

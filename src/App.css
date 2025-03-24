@@ -8,15 +8,18 @@
 :root {
   --page-bg: #f0f7ed;
   --base-bg: #f8fdf5;
-  --text-color: #2c4a34;
+  --text-color: #292929;
   --accent-color: #1e3d25; 
   --border-color: #d8e8d4; 
   --table-header-bg: #e0f0d9; 
-  --selected-bg: #87ba93; 
-  --room-available: #4caf50;
-  /* 4caf50 4d9e60 */
-  --room-booked: #e0e0e0; 
-  --hover-bg: #4d9e60;
+  --selected-bg: #1a73e8; 
+  --selected-text: #ffffff;
+  --past-bg: #f0f0f0;
+  --booked-bg: #f0f0f0;
+  --available-bg: #b3e9a3;
+  --available-text: #292929;
+  --hover-bg: #1a73e8; 
+  --hover-text: #ffffff;
 }
 
 /* Base styles */
@@ -84,14 +87,15 @@ h1, h2, h3, h4 {
 
 .date-button:hover {
   background-color: var(--hover-bg);
-  transition: none;
+  border-color: var(--selected-bg);
+  transition: all 0.2s ease;
 }
 
 .date-button.selected {
-  background-color: var(--room-available);
-  color: white;
+  background-color: var(--selected-bg);
+  color: var(--selected-text);
   font-weight: 500;
-  border-color: var(--room-available);
+  border-color: var(--selected-bg);
 }
 
 .date-button div:first-child {
@@ -100,7 +104,7 @@ h1, h2, h3, h4 {
 }
 
 .date-button.selected div:first-child {
-  color: white;
+  color: var(--selected-text);
 }
 
 .date-button div:nth-child(2) {
@@ -115,7 +119,7 @@ h1, h2, h3, h4 {
 }
 
 .date-button.selected div {
-  color: white;
+  color: var(--selected-text);
 }
 
 /* Room layout */
@@ -166,7 +170,7 @@ h1, h2, h3, h4 {
 }
 
 .room.selected {
-  border-color: var(--accent-color);
+  border-color: red;
   /* border-width: 0px; */
   /* Removed background color change */
 }
@@ -430,21 +434,27 @@ room-table-container .date-table th {
   background-color: var(--table-header-bg);
 }
 
+.room-table .time-header.highlighted-header,
+.room-table .room-cell-header.highlighted-header {
+  background-color: var(--hover-bg);
+  color: var(--selected-bg);
+  border: 1px solid var(--selected-bg);
+}
+
 .room-table .room-cell.available {
-  background-color: #e0f0d9;
-  color: #2a754a;
+  background-color: var(--available-bg);
+  color: var(--available-text);
 }
 
 .room-table .room-cell.booked {
-  background-color: #ffebee;
+  background-color: var(--booked-bg);
   color: var(--text-color);
-  /* color: #d32f2f; */
 }
 
 .room-table .room-cell.selected {
-  background-color: #FFA500 !important;
-  color: white !important;
-  box-shadow: inset 0 0 0 2px #FFA500 !important;
+  background-color: var(--selected-bg) !important;
+  color: var(--selected-text) !important;
+  box-shadow: inset 0 0 0 2px var(--selected-bg) !important;
   font-weight: 500;
 }
 
@@ -455,22 +465,14 @@ room-table-container .date-table th {
 }
 
 .room-table .room-cell:hover:not(.booked):not(.past) {
-  background-color: #1E90FF;
-  color: white;
-  box-shadow: inset 0 0 0 1px #1E90FF;
-}
-
-/* Improve selected state for consistency */
-.room-table .room-cell.selected {
-  background-color: #1E90FF !important;
-  color: white !important;
-  box-shadow: inset 0 0 0 2px #1E90FF !important;
-  font-weight: 500;
+  background-color: var(--hover-bg);
+  border: 1px solid var(--selected-bg);
+  color: var(--hover-text);
 }
 
 /* Add styles for past time slots */
 .room-table .room-cell.past {
-  background-color: var(--room-booked);
+  background-color: var(--past-bg);
   color: #999999;
   cursor: not-allowed;
   position: relative;
@@ -494,7 +496,7 @@ room-table-container .date-table th {
 }
 
 .room-table.transposed .time-cell.past {
-  background-color: var(--room-booked);
+  background-color: var(--past-bg);
   color: #999999;
   cursor: not-allowed;
   position: relative;
@@ -524,15 +526,15 @@ room-table.transposed .time-cell.past::after {
 }
 
 .room-table.transposed .time-cell:hover:not(.booked):not(.past) {
-  background-color: #1E90FF;
-  color: white;
-  box-shadow: inset 0 0 0 1px #1E90FF;
+  background-color: var(--hover-bg);
+  border: 1px solid var(--selected-bg);
+  color: var(--hover-text);
 }
 
 .room-table.transposed .time-cell.selected {
-  background-color: var(--room-available) !important;
-  color: white !important;
-  box-shadow: inset 0 0 0 2px var(--room-available) !important;
+  background-color: var(--selected-bg) !important;
+  color: var(--selected-text) !important;
+  box-shadow: inset 0 0 0 2px var(--selected-bg) !important;
   font-weight: 500;
 }
 
@@ -549,20 +551,19 @@ room-table.transposed .time-cell.past::after {
 }
 
 .room-table.transposed .time-cell.available {
-  background-color: var(--room-available);
-  color: white;
+  background-color: var(--available-bg);
+  color: var(--available-text);
 }
 
 .room-table.transposed .time-cell.booked {
-  background-color: var(--room-booked);
+  background-color: var(--booked-bg);
   color: var(--text-color);
 }
 
-.room-table.transposed .time-cell.selected {
-  background-color: #1E90FF;
-  color: white;
-  box-shadow: inset 0 0 0 2px #1E90FF;
-  font-weight: 500;
+.room-table.transposed .time-cell.past {
+  background-color: var(--past-bg);
+  color: #999999;
+  cursor: not-allowed;
 }
 
 /* Loading bar animation */
