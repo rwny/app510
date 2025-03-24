@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 function TimeRoomTable({ 
   floors, 
@@ -14,8 +14,14 @@ function TimeRoomTable({
   getBookingDetails,
   bookingSuccess
 }) {
+  const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="room-table-container">
+      {isLoading && (
+        <div className="loading-bar-container">
+          <div className="loading-bar"></div>
+        </div>
+      )}
       <div className="date-selector">
         {Array.from({ length: 7 }).map((_, i) => {
           const date = new Date();
@@ -28,7 +34,9 @@ function TimeRoomTable({
               className={`date-button ${isSelected ? 'selected' : ''}`}
               onClick={() => setSelectedDate(date)}
             >
-              <div>{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '.').replace(' ', '. ')}</div>
+              <div>
+                {date.toLocaleDateString('en-US', { weekday: 'short' }).replace('.', '')}. {date.getDate()} {date.toLocaleDateString('en-US', { month: 'short' }).replace('.', '')}.
+              </div>
             </button>
           );
         })}
@@ -74,7 +82,13 @@ function TimeRoomTable({
                           ${isPast ? 'past' : isBooked ? 'booked' : 'available'} 
                           ${isSelected ? 'selected' : ''}
                         `}
-                        onClick={(e) => !isPast && !isBooked && handleCellClick(room.id, timeSlot.id, e)}
+                        onClick={(e) => {
+                          if (!isPast && !isBooked) {
+                            setIsLoading(true);
+                            handleCellClick(room.id, timeSlot.id, e)
+                              .finally(() => setIsLoading(false));
+                          }
+                        }}
                         title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}
                         style={{
                           boxSizing: 'border-box',  // This ensures borders are included in the element's dimensions

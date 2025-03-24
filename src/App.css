@@ -13,7 +13,8 @@
   --border-color: #d8e8d4; 
   --table-header-bg: #e0f0d9; 
   --selected-bg: #87ba93; 
-  --room-available: #4d9e60; 
+  --room-available: #4caf50;
+  /* 4caf50 4d9e60 */
   --room-booked: #e0e0e0; 
   --hover-bg: #4d9e60;
 }
@@ -61,11 +62,10 @@ h1, h2, h3, h4 {
 /* Date selector buttons */
 .date-selector {
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
-  padding: 6px;
-  background-color: var(--table-header-bg);
-  border-radius: 6px;
+  gap: 0;
+  margin-bottom: 0;
+  padding: 0;
+  background-color: var(--base-bg);
   overflow-x: auto;
 }
 
@@ -75,22 +75,23 @@ h1, h2, h3, h4 {
   padding: 6px 4px;
   background-color: var(--base-bg);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 0;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
   line-height: 1.2;
+  height: 32px;
 }
 
 .date-button:hover {
   background-color: var(--hover-bg);
+  transition: none;
 }
 
 .date-button.selected {
-  background-color: var(--selected-bg);
+  background-color: var(--room-available);
   color: white;
   font-weight: 500;
-  border-color: var(--accent-color);
+  border-color: var(--room-available);
 }
 
 .date-button div:first-child {
@@ -441,8 +442,10 @@ room-table-container .date-table th {
 }
 
 .room-table .room-cell.selected {
-  background-color: var(--selected-bg);
-  color: var(--accent-color);
+  background-color: #FFA500 !important;
+  color: white !important;
+  box-shadow: inset 0 0 0 2px #FFA500 !important;
+  font-weight: 500;
 }
 
 /* Add hover effects to room cells */
@@ -452,16 +455,16 @@ room-table-container .date-table th {
 }
 
 .room-table .room-cell:hover:not(.booked):not(.past) {
-  background-color: var(--hover-bg);
-  color: var(--accent-color);
-  box-shadow: inset 0 0 0 1px var(--accent-color);
+  background-color: #1E90FF;
+  color: white;
+  box-shadow: inset 0 0 0 1px #1E90FF;
 }
 
 /* Improve selected state for consistency */
 .room-table .room-cell.selected {
-  background-color: var(--selected-bg) !important;
-  color: var(--accent-color) !important;
-  box-shadow: inset 0 0 0 2px var(--accent-color) !important;
+  background-color: #1E90FF !important;
+  color: white !important;
+  box-shadow: inset 0 0 0 2px #1E90FF !important;
   font-weight: 500;
 }
 
@@ -521,15 +524,15 @@ room-table.transposed .time-cell.past::after {
 }
 
 .room-table.transposed .time-cell:hover:not(.booked):not(.past) {
-  background-color: var(--hover-bg);
-  color: var(--accent-color);
-  box-shadow: inset 0 0 0 1px var(--accent-color);
+  background-color: #1E90FF;
+  color: white;
+  box-shadow: inset 0 0 0 1px #1E90FF;
 }
 
 .room-table.transposed .time-cell.selected {
-  background-color: var(--selected-bg) !important;
-  color: var(--accent-color) !important;
-  box-shadow: inset 0 0 0 2px var(--accent-color) !important;
+  background-color: var(--room-available) !important;
+  color: white !important;
+  box-shadow: inset 0 0 0 2px var(--room-available) !important;
   font-weight: 500;
 }
 
@@ -546,8 +549,8 @@ room-table.transposed .time-cell.past::after {
 }
 
 .room-table.transposed .time-cell.available {
-  background-color: #e0f0d9;
-  color: #2a754a;
+  background-color: var(--room-available);
+  color: white;
 }
 
 .room-table.transposed .time-cell.booked {
@@ -556,8 +559,39 @@ room-table.transposed .time-cell.past::after {
 }
 
 .room-table.transposed .time-cell.selected {
-  background-color: var(--selected-bg);
-  color: var(--accent-color);
+  background-color: #1E90FF;
+  color: white;
+  box-shadow: inset 0 0 0 2px #1E90FF;
+  font-weight: 500;
+}
+
+/* Loading bar animation */
+.loading-bar-container {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background-color: var(--border-color);
+  overflow: hidden;
+}
+
+.loading-bar {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--room-available) 50%, 
+    transparent 100%);
+  animation: loadingBar 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingBar {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Loading overlay */
@@ -585,176 +619,4 @@ room-table.transposed .time-cell.past::after {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-/* Add or modify the floating notification styles */
-.floating-notification {
-  position: absolute;
-  background-color: rgba(255, 255, 255, 0.95);
-  color: var(--text-color);
-  padding: 10px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-size: 0.9rem;
-  z-index: 1000;
-  border-left: 4px solid var(--accent-color);
-  max-width: 240px;
-  transform: translate(-50%, -100%);
-  margin-top: -10px;
-  animation: fadeIn 0.2s ease-out;
-  pointer-events: none; /* Allow clicking through the notification */
-}
-
-.floating-notification::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  margin-left: -8px;
-  border-width: 8px 8px 0;
-  border-style: solid;
-  border-color: rgba(255, 255, 255, 0.95) transparent transparent transparent;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -90%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -100%);
-  }
-}
-
-/* Floor plan button */
-.floor-plan-button {
-  position: relative;
-  background-color: transparent;
-  color: var(--accent-color);
-  border: none;
-  margin-left: 10px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  vertical-align: middle;
-  overflow: hidden;
-}
-
-.floor-plan-button svg {
-  width: 16px;
-  height: 16px;
-  margin-right: 5px;
-  position: relative;
-  z-index: 2;
-}
-
-.floor-plan-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background-color: var(--hover-bg);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
-  z-index: 1;
-}
-
-.floor-plan-button:hover {
-  color: white;
-}
-
-.floor-plan-button:hover::before {
-  width: 50px;
-  height: 50px;
-  opacity: 1;
-}
-
-/* Modal overlay and content styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1100;
-}
-
-.modal-content {
-  background-color: var(--base-bg);
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 90%;
-  max-height: 90vh;
-  width: auto;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  color: var(--accent-color);
-  cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-}
-
-/* Floor plan image container */
-.floor-plan-image-container {
-  overflow: auto;
-  max-height: calc(90vh - 100px);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  margin-top: 10px;
-}
-
-.floor-plan-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .rooms {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-
-  .time-slot-options {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-}
-
-/* If the first column of the room table needs to be left-aligned */
-.room-table td:first-child {
-  text-align: left;
-  padding-left: 15px;
-}
-
-input, button, select, textarea {
-  font-family: 'Noto Sans Thai Looped', 'Noto Sans', 'Kanit', 'Sarabun', sans-serif;
 }
