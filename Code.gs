@@ -28,13 +28,27 @@ function doGet(e) {
       var data = getBookingsData(sheet);
       Logger.log("Retrieved " + (data.length || 0) + " booking records");
       
-      // Add timestamp to response for verification
-      var response = {
-        status: "success",
-        timestamp: new Date().toString(),
-        data: data
-      };
-      output.setContent(JSON.stringify(response));
+      // Log first few records for debugging
+      if (data.length > 0) {
+        Logger.log("Sample records:");
+        for (var i = 0; i < Math.min(3, data.length); i++) {
+          Logger.log(JSON.stringify(data[i]));
+        }
+      }
+      
+      // Return data in consistent format
+      if (e.parameter.format === 'array') {
+        // Return direct array if requested
+        output.setContent(JSON.stringify(data));
+      } else {
+        // Default to wrapped response
+        var response = {
+          status: "success",
+          timestamp: new Date().toString(),
+          data: data
+        };
+        output.setContent(JSON.stringify(response));
+      }
     } catch (error) {
       Logger.log("Error retrieving bookings: " + error.toString());
       output.setContent(JSON.stringify({
@@ -106,7 +120,40 @@ function getBookingsData(sheet) {
     // Map each cell to its corresponding header
     for (var j = 0; j < camelHeaders.length; j++) {
       if (j < row.length) {
-        obj[camelHeaders[j]] = row[j];
+        var value = row[j];
+        
+        // Format time slots consistently
+        if (camelHeaders[j].toLowerCase().includes('timeslot') || 
+            camelHeaders[j].toLowerCase().includes('slot')) {
+          // Remove any single quotes (Google Sheets text indicator)
+          if (typeof value === 'string' && value.startsWith("'")) {
+            value = value.substring(1);
+          }
+          // Ensure time slot has ts. prefix
+          if (typeof value === 'string' && !value.startsWith("ts.")) {
+            value = "ts." + value;
+          }
+        }
+        
+        // Format dates consistently (YYYY-MM-DD)
+        if (camelHeaders[j].toLowerCase().includes('date') && 
+            !camelHeaders[j].toLowerCase().includes('submission')) {
+          if (value instanceof Date) {
+            value = Utilities.formatDate(value, Session.getScriptTimeZone(), "yyyy-MM-dd");
+          } else if (typeof value === 'string') {
+            // Try to parse date strings
+            try {
+              var date = new Date(value);
+              if (!isNaN(date.getTime())) {
+                value = Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyy-MM-dd");
+              }
+            } catch (e) {
+              Logger.log("Could not parse date: " + value);
+            }
+          }
+        }
+        
+        obj[camelHeaders[j]] = value;
       }
     }
     
@@ -138,8 +185,13 @@ function doPost(e) {
     var submissionDate = e.parameter.submissionDate || ''; // Date of submission
     var submissionTime = e.parameter.submissionTime || ''; // Time of submission
 
+    // Handle timeSlot formatting - remove single quotes but keep 'ts.' prefix
     if (timeSlot.startsWith("'")) {
       timeSlot = timeSlot.substring(1);
+    }
+    // Ensure timeSlot has 'ts.' prefix if not already present
+    if (!timeSlot.startsWith("ts.")) {
+      timeSlot = "ts." + timeSlot;
     }
 
     // Check if headers exist, if not, add them
@@ -161,25 +213,25 @@ function doPost(e) {
     // Add the booking data to the sheet in the SAME ORDER as headers
     sheet.appendRow([
       studentId,      // Student ID - 1st column
-      buildingId,     // Building ID - 5th column
-      roomId,         // Room ID - 2nd column
-      timeSlot,       // Time Slot - 3rd column
-      date,           // Booking date - 4th column
+      buildingId,     // Building ID - 2nd column
+      roomId,         // Room ID - 3rd column
+      timeSlot,       // Time Slot - 4th column
+      date,           // Booking date - 5th column
       submissionDate, // Submission Date - 6th column
       submissionTime  // Submission Time - 7th column
     ]);
     
     // Format the date columns to show properly as dates
     if (sheet.getLastRow() > 1) {
-      // Format the booking date column (column D - 4th column)
+      // Format the booking date column (column E - 5th column)
       var dateRange = sheet.getRange(2, 5, sheet.getLastRow() - 1, 1);
       dateRange.setNumberFormat("yyyy-mm-dd");
       
-      // Format the submission date column (column F - 6th column)
+      // Format the submission date column (column F - 6th column) - unchanged
       var submissionDateRange = sheet.getRange(2, 6, sheet.getLastRow() - 1, 1);
       submissionDateRange.setNumberFormat("yyyy-mm-dd");
       
-      // Format the submission time column (column G - 7th column)
+      // Format the submission time column (column G - 7th column) - unchanged
       var submissionTimeRange = sheet.getRange(2, 7, sheet.getLastRow() - 1, 1);
       submissionTimeRange.setNumberFormat("hh:mm:ss");
       

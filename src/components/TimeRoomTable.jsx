@@ -4,6 +4,8 @@ function TimeRoomTable({
   floors, 
   timeSlots, 
   selectedDate, 
+  setSelectedDate,
+  availableDates,
   selectedRoom, 
   selectedTimeSlot, 
   isRoomBooked, 
@@ -14,6 +16,23 @@ function TimeRoomTable({
 }) {
   return (
     <div className="room-table-container">
+      <div className="date-selector">
+        {Array.from({ length: 7 }).map((_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() + i);
+          const isSelected = date.toDateString() === selectedDate.toDateString();
+          
+          return (
+            <button
+              key={date.toISOString()}
+              className={`date-button ${isSelected ? 'selected' : ''}`}
+              onClick={() => setSelectedDate(date)}
+            >
+              <div>{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '.').replace(' ', '. ')}</div>
+            </button>
+          );
+        })}
+      </div>
       <table className={`room-table transposed ${bookingSuccess ? 'disabled-table' : ''}`}>
         <thead>
           <tr>
@@ -55,7 +74,7 @@ function TimeRoomTable({
                           ${isPast ? 'past' : isBooked ? 'booked' : 'available'} 
                           ${isSelected ? 'selected' : ''}
                         `}
-                        onClick={(e) => handleCellClick(room.id, timeSlot.id, e)}
+                        onClick={(e) => !isPast && !isBooked && handleCellClick(room.id, timeSlot.id, e)}
                         title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}
                         style={{
                           boxSizing: 'border-box',  // This ensures borders are included in the element's dimensions

@@ -102,58 +102,373 @@ export const getBangkokISOString = (date = new Date()) => {
 
 /**
  * Fetch booking data from Google Sheets
- * @param {string} scriptUrl - The Google Apps Script web app URL
- * @returns {Promise<Array>} - Promise resolving to an array of booking objects
+ * Simpler direct fetch with fallback to mock data
  */
-export const fetchBookingsFromGoogleSheets = async (url) => {
+export const fetchBookingsFromGoogleSheets = async (webAppUrl) => {
   try {
-    console.log('Sending fetch request to:', `${url}?action=getBookings`);
+    console.log('Fetching bookings from Google Sheets:', webAppUrl);
     
-    // Add a cache-busting parameter to prevent browser caching
-    const cacheBuster = new Date().getTime();
-    const response = await fetch(`${url}?action=getBookings&_=${cacheBuster}`);
+    // Create a cachebuster to prevent caching
+    const cacheBuster = Date.now();
+    const requestUrl = `${webAppUrl}?action=getBookings&cacheBust=${cacheBuster}`;
     
-    console.log('Received response with status:', response.status);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const jsonResponse = await response.json();
-    console.log('Successfully parsed JSON response');
-    console.log('Response from Google Apps Script:', jsonResponse);
-    
-    if (jsonResponse.timestamp) {
-      console.log('Server timestamp:', jsonResponse.timestamp);
-    } else {
-      console.warn('No timestamp in response');
-    }
-    
-    // Add detailed debugging for data
-    if (jsonResponse.data) {
-      console.log(`Data is an array: ${Array.isArray(jsonResponse.data)}`);
-      console.log(`Data length: ${jsonResponse.data.length}`);
-      
-      if (jsonResponse.data.length > 0) {
-        console.log('First 3 items in data:', 
-          jsonResponse.data.slice(0, 3).map(item => JSON.stringify(item)));
+    // First try direct fetch
+    try {
+      const response = await fetch(requestUrl);
+      if (response.ok) {
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
         
-        // Log all property names from first item to help debug camelCase issues
-        const firstItem = jsonResponse.data[0];
-        if (firstItem) {
-          console.log('Properties in first item:', Object.keys(firstItem));
-          console.log('First item values:', Object.values(firstItem));
+        let result;
+        try {
+          result = responseText ? JSON.parse(responseText) : null;
+          console.log('Parsed response:', result);
+        } catch (parseError) {
+          console.error('Failed to parse JSON response:', parseError, '\nResponse text:', responseText);
+          return [];
         }
+        
+        if (!result) {
+          console.error('Empty response from Google Sheets');
+          return [];
+        }
+        
+        // Handle both direct array response and wrapped response format
+        const data = Array.isArray(result) ? result : (result?.data || []);
+        console.log('Extracted bookings:', data.length);
+        
+        if (!Array.isArray(data)) {
+          console.error('Invalid data format from Google Sheets - expected array, got:', typeof data, '\nFull response:', result);
+          return [];
+        }
+        return data;
+      } else {
+        console.error('Fetch failed with status:', response.status);
       }
-    } else {
-      console.warn('No data property in response');
+    } catch (fetchError) {
+      console.error('Direct fetch failed:', fetchError);
+      console.log('Request URL was:', requestUrl);
     }
     
-    // Return the actual bookings data
-    return jsonResponse.data || [];
+    // Fallback to form submission method
+    try {
+      const formData = await fetchWithFormSubmission(webAppUrl);
+      if (formData && formData.length > 0) {
+        console.log('Successfully retrieved data via form submission:', formData.length);
+        return formData;
+      }
+      console.warn('Form submission returned empty data');
+    } catch (formError) {
+      console.error('Form submission failed:', formError);
+    }
+    
+    console.warn('Could not retrieve booking data from either method');
+    return [];
   } catch (error) {
-    console.error('Error details:', error);
-    console.error('Error fetching from Google Sheets:', error.message);
+    console.error('Error fetching bookings:', error);
     throw error;
   }
+};
+
+/**
+ * This uses a form submission approach to fetch data, similar to our posting mechanism
+ */
+const fetchWithFormSubmission = (webAppUrl) => {
+  return new Promise((resolve) => {
+    // Create hidden iframe
+    const iframeName = `fetch-iframe-${Date.now()}`;
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    // Create form for "GET" request
+    const form = document.createElement('form');
+    form.method = 'GET';
+    form.action = `${webAppUrl}?action=getBookings&format=json`;
+    form.target = iframeName;
+    form.style.display = 'none';
+    document.body.appendChild(form);
+    
+    // Set timeout for cleanup 
+    const timeout = setTimeout(() => {
+      console.log('Form submission fetch timed out');
+      cleanupAndResolve([]);
+    }, 5000);
+    
+    // Function to clean up elements and resolve promise
+    const cleanupAndResolve = (data) => {
+      clearTimeout(timeout);
+      if (document.body.contains(form)) document.body.removeChild(form);
+      if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      resolve(data);
+    };
+    
+    // Listen for iframe load
+    iframe.onload = () => {
+      try {
+        // Try to parse iframe content
+        const rawContent = iframe.contentDocument?.body?.textContent || 
+                         iframe.contentWindow?.document.body.textContent;
+                         
+        if (rawContent) {
+          try {
+            // Try parsing the content as JSON
+            const data = JSON.parse(rawContent);
+            if (Array.isArray(data)) {
+              console.log('Successfully parsed data from iframe:', data.length, 'records');
+              cleanupAndResolve(data);
+              return;
+            }
+          } catch (e) {
+            console.warn('Iframe content not valid JSON:', e);
+          }
+        }
+        
+    // If we can't get the data or it's not JSON, return empty array
+    cleanupAndResolve([]);
+      } catch (e) {
+        console.error('Error accessing iframe content:', e);
+        cleanupAndResolve([]);
+      }
+    };
+    
+    // Submit the form to initiate the request
+    form.submit();
+  });
+};
+
+/**
+ * Helper function to convert various time slot formats to our standard HH-HH format
+ * @param {string} timeSlotStr - Time slot string from various sources
+ * @returns {string} - Standardized time slot string in HH-HH format
+ */
+export const normalizeTimeSlotFormat = (timeSlotStr) => {
+  // Handle empty values
+  if (!timeSlotStr) return '';
+  
+  // Remove any leading single quote (Google Sheets text indicator)
+  if (timeSlotStr.startsWith("'")) {
+    timeSlotStr = timeSlotStr.substring(1);
+  }
+  
+  // Remove ts. prefix if present for consistent matching
+  if (timeSlotStr.startsWith('ts.')) {
+    timeSlotStr = timeSlotStr.substring(3);
+  }
+  
+  // If already in our HH-HH format, return as is
+  if (/^\d{2}-\d{2}$/.test(timeSlotStr)) {
+    return timeSlotStr;
+  }
+  
+  // Handle HH:MM format (Google Sheets time format)
+  if (timeSlotStr.includes(':')) {
+    const hourMatch = timeSlotStr.match(/(\d+):/);
+    if (hourMatch && hourMatch[1]) {
+      const startHour = parseInt(hourMatch[1], 10);
+      const endHour = startHour + 3;
+      return `${String(startHour).padStart(2, '0')}-${String(endHour).padStart(2, '0')}`;
+    }
+  }
+  
+  // Handle numeric values (Google might convert time slots to numbers)
+  if (/^\d+$/.test(timeSlotStr)) {
+    const hour = parseInt(timeSlotStr, 10);
+    // Assume this is a starting hour
+    if (hour >= 0 && hour <= 21) {
+      const endHour = hour + 3;
+      return `${String(hour).padStart(2, '0')}-${String(endHour).padStart(2, '0')}`;
+    }
+  }
+  
+  // If we can extract numbers, try to interpret as a time range
+  const numbers = timeSlotStr.match(/\d+/g);
+  if (numbers && numbers.length >= 2) {
+    const startHour = parseInt(numbers[0], 10);
+    const endHour = parseInt(numbers[1], 10);
+    // Ensure we're using exactly the format from our time slots
+    return `${String(startHour).padStart(2, '0')}-${String(endHour).padStart(2, '0')}`;
+  }
+  
+  // Return original if all else fails
+  return timeSlotStr;
+};
+
+/**
+ * Find the exact time slot from the global time slots array
+ * @param {string} timeSlotStr - The time slot string to match
+ * @param {Array} timeSlots - Array of time slot objects with id and label properties
+ * @returns {Object|null} - The matching time slot object or null if not found
+ */
+export const findExactTimeSlot = (timeSlotStr, timeSlots) => {
+  // First normalize the time slot string (removing any ts. prefix)
+  const normalizedTimeSlot = normalizeTimeSlotFormat(timeSlotStr);
+  
+  // Try direct match first (comparing just the time portion)
+  const exactMatch = timeSlots.find(slot => {
+    // Compare both with and without 'ts.' prefix
+    return slot.label === normalizedTimeSlot || 
+           slot.label === `ts.${normalizedTimeSlot}` ||
+           slot.label.replace('ts.', '') === normalizedTimeSlot;
+  });
+  if (exactMatch) return exactMatch;
+  
+  // If no direct match, try to extract the hours
+  const numbers = normalizedTimeSlot.match(/\d+/g);
+  if (numbers && numbers.length >= 2) {
+    const startHour = parseInt(numbers[0], 10);
+    const endHour = parseInt(numbers[1], 10);
+    
+    // Look for a time slot with the same start and end hours
+    const hourMatch = timeSlots.find(slot => {
+      // Handle both formats: "HH-HH" and "ts.HH-HH"
+      const slotLabel = slot.label.startsWith('ts.') ? 
+        slot.label.substring(3) : 
+        slot.label;
+      
+      const slotNumbers = slotLabel.match(/\d+/g);
+      if (slotNumbers && slotNumbers.length >= 2) {
+        const slotStart = parseInt(slotNumbers[0], 10);
+        const slotEnd = parseInt(slotNumbers[1], 10);
+        return slotStart === startHour && slotEnd === endHour;
+      }
+      return false;
+    });
+    
+    if (hourMatch) return hourMatch;
+  }
+  
+  // If we still don't have a match, try matching just the start hour
+  if (numbers && numbers.length >= 1) {
+    const startHour = parseInt(numbers[0], 10);
+    const endHour = startHour + 3;
+    
+    const hourMatch = timeSlots.find(slot => {
+      const slotLabel = slot.label.startsWith('ts.') ? 
+        slot.label.substring(3) : 
+        slot.label;
+      
+      const slotNumbers = slotLabel.match(/\d+/g);
+      if (slotNumbers && slotNumbers.length >= 2) {
+        const slotStart = parseInt(slotNumbers[0], 10);
+        const slotEnd = parseInt(slotNumbers[1], 10);
+        return slotStart === startHour && slotEnd === endHour;
+      }
+      return false;
+    });
+    
+    if (hourMatch) return hourMatch;
+  }
+  
+  // If we still don't have a match, log details and return null
+  console.warn(`Could not find exact time slot match for: ${timeSlotStr} (normalized: ${normalizedTimeSlot})`);
+  console.log('Available time slots:', timeSlots.map(ts => ts.label));
+  return null;
+};
+
+/**
+ * Process a single booking record into standard format
+ * @param {Object} record - Raw booking record from API
+ * @param {Array} timeSlots - App time slots array
+ * @returns {Object} Normalized booking object
+ */
+export const normalizeBookingRecord = (record, timeSlots) => {
+  // Create a standardized booking object
+  const booking = {
+    studentId: '',
+    buildingId: '',
+    roomId: '',
+    timeSlot: '',
+    date: '',
+    submissionDate: '',
+    submissionTime: ''
+  };
+  
+  // Normalize all fields regardless of case
+  Object.entries(record).forEach(([key, value]) => {
+    const lowerKey = key.toLowerCase();
+    
+    if (lowerKey.includes('student')) booking.studentId = value;
+    if (lowerKey.includes('building')) booking.buildingId = value;
+    if (lowerKey.includes('room') && !lowerKey.includes('building')) booking.roomId = value;
+    if (lowerKey.includes('time') && !lowerKey.includes('submission')) booking.timeSlot = value;
+    if (lowerKey === 'slot' || lowerKey.includes('slot')) booking.timeSlot = value;
+    if (lowerKey.includes('date') && !lowerKey.includes('submission')) booking.date = value;
+    if (lowerKey.includes('submission') && lowerKey.includes('date')) booking.submissionDate = value;
+    if (lowerKey.includes('submission') && lowerKey.includes('time')) booking.submissionTime = value;
+  });
+  
+  // Normalize time slot format using our helper function
+  booking.timeSlot = normalizeTimeSlotFormat(booking.timeSlot);
+  
+  // Normalize date format
+  if (booking.date) {
+    if (booking.date.startsWith("'")) {
+      booking.date = booking.date.substring(1);
+    }
+    
+    if (booking.date.includes('T')) {
+      booking.date = booking.date.split('T')[0];
+    } else if (booking.date.includes('/')) {
+      const parts = booking.date.split('/');
+      if (parts.length === 3) {
+        const month = parseInt(parts[0]);
+        const day = parseInt(parts[1]);
+        const year = parseInt(parts[2]);
+        
+        if (!isNaN(month) && !isNaN(day) && !isNaN(year)) {
+          const dateObj = new Date(year, month - 1, day);
+          booking.date = formatDateForSheet(dateObj);
+        }
+      }
+    }
+  }
+  
+  return booking;
+};
+
+/**
+ * Format mock bookings for consistent development testing
+ */
+export const getMockBookings = () => {
+  console.log('Generating mock booking data for testing');
+  
+  // Get current date and next 7 days
+  const today = new Date();
+  const dates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    return formatDateForSheet(date);
+  });
+  
+  // Focus on current building rooms
+  const rooms = ['201', '202', '203', '204', '205', '301', '302', '303', '304', '305'];
+  
+  // Generate random bookings
+  const bookings = [];
+  
+  // Create 15-25 random bookings
+  const bookingCount = Math.floor(Math.random() * 10) + 15;
+  
+  for (let i = 0; i < bookingCount; i++) {
+    const randomDate = dates[Math.floor(Math.random() * dates.length)];
+    const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+    const randomTimeSlot = Math.floor(Math.random() * 8);
+    const timeSlotLabel = `${String(randomTimeSlot * 3).padStart(2, '0')}-${String(randomTimeSlot * 3 + 3).padStart(2, '0')}`;
+    
+    bookings.push({
+      studentId: `6${Math.floor(Math.random() * 10000000).toString().padStart(7, '0')}`,
+      buildingId: 'AR15',
+      roomId: randomRoom,
+      timeSlot: `ts.${timeSlotLabel}`,
+      date: randomDate,
+      // Add sample submission data
+      submissionDate: formatDateForSheet(today),
+      submissionTime: formatTimeForSheet(today)
+    });
+  }
+  
+  console.log(`Generated ${bookings.length} mock bookings`);
+  return bookings;
 };
