@@ -57,13 +57,14 @@ html, body {
 header {
   background-color: var(--base-bg);
   padding: 10px;
-  margin-bottom: 10px;
+  margin-left: 10px;
+  margin-bottom: 0px;
   border-bottom: 1px solid var(--border-color);
 }
 
 h1, h2, h3, h4 {
   color: var(--accent-color);
-  margin: 0 0 10px 0;
+  margin: 0 0 0 0;
 }
 
 /* Date selector buttons */
@@ -478,7 +479,7 @@ h1, h2, h3, h4 {
 /* Table styles */
 .room-table-container {
   overflow-x: auto;
-  margin-top: 20px;
+  margin-top: 0px;
   background-color: var(--base-bg);
   padding: 20px 20px 10px 20px;
   border: 1px solid var(--border-color);
