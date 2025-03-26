@@ -179,20 +179,6 @@ function App() {
   };
 
   // Modify the useEffect hook to fetch bookings
-  // Prevent page reload from opening new tab
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (e.type === 'beforeunload') {
-        e.preventDefault();
-        return (e.returnValue = '');
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -307,9 +293,10 @@ function App() {
     return slot ? slot.label.replace('-', ':00-') + ':00' : ''
   }
 
-  const handleCellClick = (roomId, timeSlotId) => {
+  const handleCellClick = (roomId, timeSlotId, date) => {
     setSelectedRoom(roomId)
     setSelectedTimeSlot(timeSlotId)
+    setSelectedDate(date)
   }
 
   const getBookingDetails = (roomId, date, timeSlotId) => {
@@ -329,6 +316,7 @@ function App() {
   }
 
   const [isMobile, setIsMobile] = useState(false);
+
 
   useEffect(() => {
     const checkMobile = () => {

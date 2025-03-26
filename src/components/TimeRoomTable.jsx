@@ -1,19 +1,41 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 function TimeRoomTable({ 
-  floors, 
-  timeSlots, 
-  selectedDate, 
+  floors,
+  timeSlots,
+  selectedDate,
   setSelectedDate,
   availableDates,
   selectedRoom, 
-  selectedTimeSlot, 
+  selectedTimeSlot,
   isRoomBooked, 
   isTimeSlotPast, 
   handleCellClick, 
   getBookingDetails,
   bookingSuccess
 }) {
+  // Add state to track current date
+  const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // Effect to check for date changes every minute
+  useEffect(() => {
+    const checkDateChange = () => {
+      const now = new Date();
+      if (now.getDate() !== currentDate.getDate() || 
+          now.getMonth() !== currentDate.getMonth() || 
+          now.getFullYear() !== currentDate.getFullYear()) {
+        setCurrentDate(now);
+        setSelectedDate(now);
+      }
+    };
+    
+    // Run immediately and then every minute
+    checkDateChange();
+    const intervalId = setInterval(checkDateChange, 60000);
+    
+    return () => clearInterval(intervalId);
+  }, [currentDate, setSelectedDate]);
+
   return (
     <div className="room-table-container">
       <div className="date-selector">
@@ -78,7 +100,7 @@ function TimeRoomTable({
                         `}
                         onClick={(e) => {
                           if (!isPast && !isBooked) {
-                            handleCellClick(room.id, timeSlot.id, e);
+                            handleCellClick(room.id, timeSlot.id, selectedDate);
                           }
                         }}
                         title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}
