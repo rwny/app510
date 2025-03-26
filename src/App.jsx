@@ -178,6 +178,21 @@ function App() {
   };
 
   // Modify the useEffect hook to fetch bookings
+  // Prevent page reload from opening new tab
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (e.type === 'beforeunload') {
+        e.preventDefault();
+        return (e.returnValue = '');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     

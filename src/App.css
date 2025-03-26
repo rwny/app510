@@ -145,7 +145,7 @@ h1, h2, h3, h4 {
 
 /* Floor header alignment */
 .floor h3,
-.floor-header,
+.floor-header, 
 .floor-header-row th,
 .floor-header-row td,
 .room-table th:first-child {
@@ -154,6 +154,7 @@ h1, h2, h3, h4 {
   font-size: 1.1rem;
   color: var(--accent-color);
 }
+
 
 .rooms {
   display: grid;
