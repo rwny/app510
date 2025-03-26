@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 
 function TimeRoomTable({ 
   floors, 
@@ -14,14 +14,8 @@ function TimeRoomTable({
   getBookingDetails,
   bookingSuccess
 }) {
-  const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="room-table-container">
-      {isLoading && (
-        <div className="loading-bar-container">
-          <div className="loading-bar"></div>
-        </div>
-      )}
       <div className="date-selector">
         {Array.from({ length: 7 }).map((_, i) => {
           const date = new Date();
@@ -84,9 +78,7 @@ function TimeRoomTable({
                         `}
                         onClick={(e) => {
                           if (!isPast && !isBooked) {
-                            setIsLoading(true);
-                            handleCellClick(room.id, timeSlot.id, e)
-                              .finally(() => setIsLoading(false));
+                            handleCellClick(room.id, timeSlot.id, e);
                           }
                         }}
                         title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}

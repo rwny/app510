@@ -313,8 +313,11 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="App" ref={appRef}>
-      {/* Main app content */}
-      <TimeRoomTable
+        <header>
+          <h3>ระบบจองห้องเรียน {buildingID}</h3>
+        </header>
+        {/* Main app content */}
+        <TimeRoomTable
         buildingName={buildingName}
         floors={floors}
         allRooms={allRooms}
