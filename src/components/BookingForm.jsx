@@ -23,12 +23,14 @@ const BookingForm = ({
       <div className="booking-form fixed-height">
         <div className="booking-form-grid">
           <div className="booking-details">
+
             <div className="booking-info-row">
               <span className="success-badge">จองห้องเรียนสำเร็จ!</span>
               <span>ห้อง {selectedRoom}</span>
               <span>เวลา {formatTimeSlotLong(selectedTimeSlot)}</span>
               <span>วันที่ {formatDate(selectedDate)}</span>
             </div>
+            
           </div>
           
           <div className="user-info">
@@ -56,9 +58,9 @@ const BookingForm = ({
       <div className="booking-form-grid">
         <div className="booking-details">
           <div className="booking-info-row">
+            <span>Choose {formatDate(selectedDate)}</span>
             {selectedRoom ? <span>ห้อง {selectedRoom}</span> : <span className="placeholder-info">โปรดเลือกห้อง</span>}
             {selectedTimeSlot !== null ? <span>เวลา {formatTimeSlotLong(selectedTimeSlot)}</span> : <span className="placeholder-info">โปรดเลือกเวลา</span>}
-            <span>วันที่ {formatDate(selectedDate)}</span>
           </div>
         </div>
         
