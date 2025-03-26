@@ -22,7 +22,7 @@ const BookingForm = ({
     if (bookingSuccess) {
       const timer = setTimeout(() => {
         resetBookingForm();
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [bookingSuccess, resetBookingForm]);

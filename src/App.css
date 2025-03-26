@@ -9,16 +9,16 @@
   --page-bg: #f0f7ed;
   --base-bg: #f8fdf5;
   --text-color: #292929;
-  --accent-color: #1a73e8; 
+  --accent-color: #6ca3ec; 
   --border-color: #d8e8d4; 
   --table-header-bg: #e0f0d9; 
-  --selected-bg: #1a73e8; 
+  --selected-bg: #6ca3ec; 
   --selected-text: #ffffff;
   --past-bg: #f0f0f0;
   --booked-bg: #f0f0f0;
   --available-bg: #b3e9a3;
   --available-text: #292929;
-  --hover-bg: #1a73e8; 
+  --hover-bg: #6ca3ec; 
   --hover-text: #ffffff;
 }
 
