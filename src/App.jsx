@@ -263,7 +263,7 @@ function App() {
               }
               
               bookingsMap[dateStr][roomId][timeSlotId] = {
-                studentID: booking.studentId
+                studentID: booking.studentId || booking.studentID || ''
               };
             } catch (error) {
               console.error('Error processing booking record:', error, booking);
@@ -316,11 +316,13 @@ function App() {
       if (!bookings) return 'ว่าง';
       const dateStr = date.toISOString().split('T')[0];
       const booking = bookings[dateStr]?.[roomId]?.[timeSlotId];
-      return booking 
-        ? `จองโดย: ${booking.studentID}`
-        : 'ว่าง';
+      if (booking && booking.studentID) {
+        const studentIDStr = String(booking.studentID);
+        return `จองโดย: ------${studentIDStr.slice(-2)}`;
+      }
+      return 'ว่าง';
     } catch (error) {
-      console.error('Error getting booking details:', error);
+      // console.error('Error getting booking details:', error);
       return 'ว่าง';
     }
   }
