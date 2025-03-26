@@ -55,6 +55,16 @@ header {
   padding: 10px;
   margin-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.version-text {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 300;
 }
 
 h1, h2, h3, h4 {
@@ -626,59 +636,69 @@ room-table.transposed .time-cell.past::after {
 }
 
 @media (max-width: 768px) {
-  .room-table.transposed .time-cell {
-    padding: 1px 2px;
-    height: 18px;
-    font-size: 0.7rem;
+  .booking-form {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    padding: 12px 16px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+    background-color: var(--base-bg);
   }
-  
-  .floor-header-row td {
-    padding: 4px 8px;
+
+  .booking-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
   }
-}
 
-.room-table.transposed .time-cell.available {
-  background-color: var(--available-bg);
-  color: var(--available-text);
-}
-
-.room-table.transposed .time-cell.booked {
-  background-color: var(--booked-bg);
-  color: var(--text-color);
-}
-
-.room-table.transposed .time-cell.past {
-  background-color: var(--past-bg);
-  color: #999999;
-  cursor: not-allowed;
-}
-
-/* Loading bar animation */
-.loading-bar-container {
-  position: relative;
-  width: 100%;
-  height: 4px;
-  background-color: var(--border-color);
-  overflow: hidden;
-}
-
-.loading-bar {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    var(--accent-color) 50%, 
-    transparent 100%);
-  animation: loadingBar 1.5s ease-in-out infinite;
-}
-
-@keyframes loadingBar {
-  0% {
-    transform: translateX(-100%);
+  .booking-form.fixed-height {
+    height: auto;
+    min-height: 120px;
+    padding: 16px;
   }
-  100% {
-    transform: translateX(100%);
+
+  .booking-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .booking-info-row span {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    white-space: nowrap;
+    background-color: var(--selected-bg);
+    color: var(--selected-text);
+  }
+
+  .user-info {
+    width: 100%;
+  }
+
+  .user-info input {
+    padding: 10px 12px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .book-button {
+    padding: 12px;
+    font-size: 1rem;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .App {
+    padding-bottom: 140px;
   }
 }
 

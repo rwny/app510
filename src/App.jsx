@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
+import { version } from './data/version'
 // Import building data from external file
 import buildings, { getBuilding, getAllFloors, getAllRooms } from './data/buildings'
 // Import components
@@ -345,6 +346,7 @@ function App() {
       <div className="App" ref={appRef}>
         <header>
           <h3>ระบบจองห้องเรียน {buildingID}</h3>
+          <div className="version-text">{version}</div>
         </header>
         {/* Main app content */}
         <TimeRoomTable
