@@ -325,6 +325,19 @@ function App() {
     }
   }
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const showBookingForm = !isMobile || (selectedRoom !== null && selectedTimeSlot !== null);
+
   return (
     <ErrorBoundary>
       <div className="App" ref={appRef}>
@@ -333,40 +346,42 @@ function App() {
         </header>
         {/* Main app content */}
         <TimeRoomTable
-        buildingName={buildingName}
-        floors={floors}
-        allRooms={allRooms}
-        availableDates={availableDates}
-        timeSlots={timeSlots}
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-        bookings={bookings}
-        isRoomAvailable={isRoomAvailable}
-        isRoomBooked={isRoomBooked}
-        isTimeSlotPast={isTimeSlotPast}
-        handleCellClick={handleCellClick}
-        selectedRoom={selectedRoom}
-        selectedTimeSlot={selectedTimeSlot}
-        isLoading={isLoading}
-        getBookingDetails={getBookingDetails}
-        bookingSuccess={bookingSuccess}
-      />
+          buildingName={buildingName}
+          floors={floors}
+          allRooms={allRooms}
+          availableDates={availableDates}
+          timeSlots={timeSlots}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          bookings={bookings}
+          isRoomAvailable={isRoomAvailable}
+          isRoomBooked={isRoomBooked}
+          isTimeSlotPast={isTimeSlotPast}
+          handleCellClick={handleCellClick}
+          selectedRoom={selectedRoom}
+          selectedTimeSlot={selectedTimeSlot}
+          isLoading={isLoading}
+          getBookingDetails={getBookingDetails}
+          bookingSuccess={bookingSuccess}
+        />
       
-      {/* Booking form */}
-      <BookingForm
-        selectedRoom={selectedRoom}
-        selectedTimeSlot={selectedTimeSlot}
-        selectedDate={selectedDate}
-        studentID={studentID}
-        setStudentID={setStudentID}
-        isStudentIDValid={isStudentIDValid}
-        bookRoom={bookRoom}
-        resetBookingForm={resetBookingForm}
-        bookingSuccess={bookingSuccess}
-        isSubmitting={isSubmitting}
-        formatDate={formatDate}
-        formatTimeSlotLong={formatTimeSlotLong}
-      />
+        {/* Booking form - only shown on mobile after selection */}
+        {showBookingForm && (
+          <BookingForm
+            selectedRoom={selectedRoom}
+            selectedTimeSlot={selectedTimeSlot}
+            selectedDate={selectedDate}
+            studentID={studentID}
+            setStudentID={setStudentID}
+            isStudentIDValid={isStudentIDValid}
+            bookRoom={bookRoom}
+            resetBookingForm={resetBookingForm}
+            bookingSuccess={bookingSuccess}
+            isSubmitting={isSubmitting}
+            formatDate={formatDate}
+            formatTimeSlotLong={formatTimeSlotLong}
+          />
+        )}
       
       {/* Notification */}
       {notification.show && (

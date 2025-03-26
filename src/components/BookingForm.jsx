@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const BookingForm = ({
   bookingSuccess,
@@ -18,36 +18,27 @@ const BookingForm = ({
   isSubmitting
 }) => {
   
+  useEffect(() => {
+    if (bookingSuccess) {
+      const timer = setTimeout(() => {
+        resetBookingForm();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [bookingSuccess, resetBookingForm]);
+
   if (bookingSuccess) {
     return (
       <div className="booking-form fixed-height">
         <div className="booking-form-grid">
           <div className="booking-details">
-
             <div className="booking-info-row">
               <span className="success-badge">จองห้องเรียนสำเร็จ!</span>
               <span>ห้อง {selectedRoom}</span>
               <span>เวลา {formatTimeSlotLong(selectedTimeSlot)}</span>
               <span>วันที่ {formatDate(selectedDate)}</span>
             </div>
-            
           </div>
-          
-          <div className="user-info">
-            <input
-              type="text"
-              value={studentID}
-              disabled={true}
-              readOnly
-            />
-          </div>
-          
-          <button
-            onClick={resetBookingForm}
-            className="book-button success-button"
-          >
-            เสร็จสิ้น
-          </button>
         </div>
       </div>
     );

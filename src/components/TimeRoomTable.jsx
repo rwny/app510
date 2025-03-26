@@ -54,7 +54,7 @@ function TimeRoomTable({
             <Fragment key={floor.id}>
               <tr className="floor-header-row">
                 <td colSpan={timeSlots.length + 1} className="floor-header">
-                  {floor.name}
+                  {/* {floor.name} */}
                 </td>
               </tr>
               {floor.rooms.map(room => (
