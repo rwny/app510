@@ -60,10 +60,10 @@ const BookingForm = ({
             type="tel"
             value={studentID}
             onChange={(e) => setStudentID(e.target.value)}
-            placeholder="รหัสนักศึกษา 4 หลัก"
-            maxLength="4"
-            pattern="\d{4}"
-            title="กรุณากรอกรหัสนักศึกษา 4 หลัก"
+            placeholder="รหัสนักศึกษา 8 หลัก"
+            maxLength="8"
+            pattern="\d{8}"
+            title="กรุณากรอกรหัสนักศึกษา 8 หลัก"
             disabled={!selectedRoom || selectedTimeSlot === null}
           />
         </div>
