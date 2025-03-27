@@ -60,8 +60,7 @@ export const submitToGoogleSheets = (scriptUrl, data) => {
 };
 
 /**
- * Format a date object into YYYY-MM-DD format for Bangkok timezone (UTC+7)
- * FIXED: Removed timezone conversion to prevent date shifting
+ * Format a date object into YYYY-MM-DD format - fixed to avoid timezone issues
  */
 export const formatDateForSheet = (date) => {
   if (!date || isNaN(date.getTime())) {
@@ -69,16 +68,14 @@ export const formatDateForSheet = (date) => {
     return '';
   }
   
-  // Create a copy to avoid modifying the original date
-  const dateCopy = new Date(date);
+  // Extract date parts directly to avoid timezone issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   
-  // Format as YYYY-MM-DD without timezone adjustment
-  const year = dateCopy.getFullYear();
-  const month = String(dateCopy.getMonth() + 1).padStart(2, '0');
-  const day = String(dateCopy.getDate()).padStart(2, '0');
-  
-  console.log(`Formatting date: ${date.toISOString()} -> ${year}-${month}-${day}`);
-  return `${year}-${month}-${day}`;
+  const formatted = `${year}-${month}-${day}`;
+  console.log(`Formatting date - Year: ${year}, Month: ${month}, Day: ${day} => ${formatted}`);
+  return formatted;
 };
 
 // Format a time value for Google Sheets in Bangkok timezone (UTC+7)
@@ -107,7 +104,6 @@ export const getBangkokISOString = (date = new Date()) => {
 
 /**
  * Fetch booking data from Google Sheets
- * Simpler direct fetch with fallback to mock data
  */
 export const fetchBookingsFromGoogleSheets = async (webAppUrl) => {
   try {
@@ -197,6 +193,33 @@ export const fetchBookingsFromGoogleSheets = async (webAppUrl) => {
             };
           }
         });
+        
+        // Add timezone debugging for raw dates
+        if (data.length > 0) {
+          console.log('TIMEZONE DEBUG - Sample booking dates:');
+          data.slice(0, 5).forEach((booking, index) => {
+            if (booking.date) {
+              // Show the date in different formats to identify timezone shifts
+              const rawDate = booking.date;
+              let jsDate;
+              try {
+                jsDate = new Date(rawDate);
+              } catch (e) {
+                jsDate = 'Invalid Date';
+              }
+              
+              console.log(`Booking ${index} Date:`, {
+                raw: rawDate,
+                parsed: jsDate.toString(),
+                year: jsDate.getFullYear ? jsDate.getFullYear() : 'N/A',
+                month: jsDate.getMonth ? jsDate.getMonth() + 1 : 'N/A',
+                day: jsDate.getDate ? jsDate.getDate() : 'N/A',
+                dateOnly: jsDate.toISOString ? jsDate.toISOString().split('T')[0] : 'N/A',
+                localeDateStr: jsDate.toLocaleDateString ? jsDate.toLocaleDateString() : 'N/A'
+              });
+            }
+          });
+        }
         
         return sanitizedData;
       } else {
