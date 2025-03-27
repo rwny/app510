@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState, useRef } from 'react';
 
 function TimeRoomTable({ 
   floors,
@@ -16,6 +16,20 @@ function TimeRoomTable({
 }) {
   // Add state to track current date
   const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // Add state for tooltip
+  const [tooltip, setTooltip] = useState({
+    show: false,
+    x: 0,
+    y: 0,
+    content: '',
+    date: null,
+    room: null,
+    timeSlot: null
+  });
+
+  // Ref for tooltip element
+  const tooltipRef = useRef(null);
   
   // Effect to check for date changes every minute
   useEffect(() => {
@@ -35,6 +49,101 @@ function TimeRoomTable({
     
     return () => clearInterval(intervalId);
   }, [currentDate, setSelectedDate]);
+
+  // Format date for display
+  const formatDate = (date) => {
+    if (!date) return '';
+    return date.toLocaleDateString('th-TH', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  // Format timeslot for display
+  const formatTimeSlot = (timeSlotId) => {
+    const slot = timeSlots.find(slot => slot.id === timeSlotId);
+    if (!slot) return '';
+    return `${slot.label.split('-')[0]}:00 - ${slot.label.split('-')[1]}:00`;
+  };
+
+  // Handle mouse enter on cell
+  const handleMouseEnter = (e, room, timeSlot) => {
+    if (!room || timeSlot === undefined) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    
+    // Prepare tooltip content
+    const dateFormatted = formatDate(selectedDate);
+    const timeSlotFormatted = formatTimeSlot(timeSlot);
+    const status = isTimeSlotPast(selectedDate, timeSlot) 
+      ? 'ผ่านไปแล้ว' 
+      : isRoomBooked(room.id, selectedDate, timeSlot) 
+        ? 'จองแล้ว' 
+        : 'ว่าง';
+    
+    const bookingInfo = getBookingDetails(room.id, selectedDate, timeSlot);
+    
+    const tooltipContent = `
+      <div class="tooltip-content">
+        <div class="tooltip-header">
+          <strong>ห้อง ${room.id}</strong>
+        </div>
+        <div>วันที่: ${dateFormatted}</div>
+        <div>เวลา: ${timeSlotFormatted}</div>
+        <div>สถานะ: ${status}</div>
+        <div>${bookingInfo !== 'ว่าง' ? bookingInfo : ''}</div>
+      </div>
+    `;
+    
+    // Position tooltip below the cell instead of above
+    setTooltip({
+      show: true,
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 10, // Position below the cell with a small gap
+      content: tooltipContent,
+      date: selectedDate,
+      room: room,
+      timeSlot: timeSlot
+    });
+  };
+
+  // Handle mouse leave
+  const handleMouseLeave = () => {
+    setTooltip(prev => ({ ...prev, show: false }));
+  };
+
+  // Effect to adjust tooltip position based on viewport
+  useEffect(() => {
+    if (tooltip.show && tooltipRef.current) {
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Check if tooltip is out of viewport bounds
+      if (tooltipRect.right > viewportWidth) {
+        setTooltip(prev => ({ 
+          ...prev, 
+          x: prev.x - (tooltipRect.right - viewportWidth) - 10
+        }));
+      }
+      
+      if (tooltipRect.left < 0) {
+        setTooltip(prev => ({ 
+          ...prev, 
+          x: prev.x - tooltipRect.left + 10
+        }));
+      }
+      
+      if (tooltipRect.top < 0) {
+        setTooltip(prev => ({ 
+          ...prev, 
+          y: tooltipRect.height + 10
+        }));
+      }
+    }
+  }, [tooltip.show]);
 
   return (
     <div className="room-table-container">
@@ -60,7 +169,7 @@ function TimeRoomTable({
       <table className={`room-table transposed ${bookingSuccess ? 'disabled-table' : ''}`}>
         <thead>
           <tr>
-            <th className="building-header">ห้อง</th>
+            <th className="building-header"></th>
             {timeSlots.map(timeSlot => (
               <th 
                 key={timeSlot.id} 
@@ -103,7 +212,9 @@ function TimeRoomTable({
                             handleCellClick(room.id, timeSlot.id, selectedDate);
                           }
                         }}
-                        title={isPast ? 'เวลาที่ผ่านไปแล้ว' : getBookingDetails(room.id, selectedDate, timeSlot.id)}
+                        onMouseEnter={(e) => handleMouseEnter(e, room, timeSlot.id)}
+                        onMouseLeave={handleMouseLeave}
+                        title=""
                       >
                         {isPast ? '-' : isBooked ? '-' : 'ว่าง'}  
                       </td>
@@ -115,6 +226,22 @@ function TimeRoomTable({
           ))}
         </tbody>
       </table>
+      
+      {/* Custom Tooltip */}
+      {tooltip.show && (
+        <div 
+          ref={tooltipRef}
+          className="custom-tooltip below-cell" 
+          style={{ 
+            position: 'fixed',
+            top: `${tooltip.y}px`,
+            left: `${tooltip.x}px`,
+            transform: 'translate(-50%, 0)', // Changed from 'translate(-50%, -100%)' to show below
+            zIndex: 1000
+          }}
+          dangerouslySetInnerHTML={{ __html: tooltip.content }}
+        />
+      )}
     </div>
   );
 }
