@@ -207,6 +207,9 @@ function App() {
         
         // Process data if we got any, otherwise use empty map
         if (data && Array.isArray(data)) {
+          // Debug logging for date comparison issue
+          console.log('Selected date for fetch:', selectedDate.toISOString());
+          
           data.forEach((booking) => {
             try {
               const roomId = booking.roomId || booking.roomID;
@@ -222,26 +225,52 @@ function App() {
               let bookingDate = booking.date || booking.bookingDate;
               if (!bookingDate) return;
 
-              // Handle date parsing more carefully
-              let dateObj;
-              if (typeof bookingDate === 'string') {
-                // Try ISO format first
+              // Handle date parsing more safely
+              let dateObj = null;
+              let dateStr = '';
+              
+              try {
+                // First try to parse as a standard date string
                 dateObj = new Date(bookingDate);
-                // If invalid, try YYYY-MM-DD format
+                
+                // Check if date is valid
                 if (isNaN(dateObj.getTime())) {
-                  const parts = bookingDate.split('-');
-                  if (parts.length === 3) {
-                    dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                  // If it's not valid, try parsing as YYYY-MM-DD
+                  if (typeof bookingDate === 'string' && bookingDate.includes('-')) {
+                    const [year, month, day] = bookingDate.split('-').map(part => parseInt(part, 10));
+                    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                      dateObj = new Date(year, month - 1, day);
+                    }
                   }
                 }
-              } else if (bookingDate instanceof Date) {
-                dateObj = bookingDate;
+                
+                // If still invalid, use selected date as fallback
+                if (!dateObj || isNaN(dateObj.getTime())) {
+                  console.warn(`Invalid date in booking: ${bookingDate}, using selected date instead`);
+                  dateObj = new Date(selectedDate);
+                }
+                
+                // Format as YYYY-MM-DD
+                const year = dateObj.getFullYear();
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                dateStr = `${year}-${month}-${day}`;
+                
+                console.log(`Processed date for room ${roomId}, timeSlot ${timeSlotId}:`, {
+                  original: bookingDate,
+                  processed: dateStr
+                });
+              } catch (dateError) {
+                console.error('Error processing date:', dateError);
+                // Use current date as fallback
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dateStr = `${year}-${month}-${day}`;
               }
               
-              if (!dateObj || isNaN(dateObj.getTime())) return;
-              
-              const dateStr = dateObj.toISOString().split('T')[0];
-              
+              // Initialize structures if needed
               if (!bookingsMap[dateStr]) {
                 bookingsMap[dateStr] = {};
               }
@@ -252,11 +281,20 @@ function App() {
               bookingsMap[dateStr][roomId][timeSlotId] = {
                 studentID: booking.studentId || booking.studentID || ''
               };
+              
+              // Log successful booking import
+              console.log(`Added booking: Room ${roomId}, Date ${dateStr}, TimeSlot ${timeSlotId}`);
             } catch (error) {
               console.error('Error processing booking record:', error, booking);
             }
           });
         }
+        
+        // Log the final bookings map for each date
+        console.log('Final bookings map:', Object.keys(bookingsMap).map(date => ({
+          date,
+          rooms: Object.keys(bookingsMap[date] || {}).length
+        })));
         
         if (isMounted) {
           setBookings(bookingsMap);

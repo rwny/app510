@@ -59,20 +59,25 @@ export const submitToGoogleSheets = (scriptUrl, data) => {
   });
 };
 
-// Format a date object into YYYY-MM-DD format for Bangkok timezone (UTC+7)
+/**
+ * Format a date object into YYYY-MM-DD format for Bangkok timezone (UTC+7)
+ * FIXED: Removed timezone conversion to prevent date shifting
+ */
 export const formatDateForSheet = (date) => {
-  // Create date with timezone offset for Bangkok (UTC+7)
-  const bangkokOffset = 7 * 60; // Bangkok is UTC+7 (7 hours * 60 minutes)
-  const userOffset = date.getTimezoneOffset(); // Returns negative minutes from UTC
-  const totalOffset = bangkokOffset + userOffset; // Minutes to add
+  if (!date || isNaN(date.getTime())) {
+    console.error('Invalid date provided to formatDateForSheet');
+    return '';
+  }
   
-  const bangkokDate = new Date(date.getTime() + totalOffset * 60000);
+  // Create a copy to avoid modifying the original date
+  const dateCopy = new Date(date);
   
-  // Format as YYYY-MM-DD
-  const year = bangkokDate.getFullYear();
-  const month = String(bangkokDate.getMonth() + 1).padStart(2, '0');
-  const day = String(bangkokDate.getDate()).padStart(2, '0');
+  // Format as YYYY-MM-DD without timezone adjustment
+  const year = dateCopy.getFullYear();
+  const month = String(dateCopy.getMonth() + 1).padStart(2, '0');
+  const day = String(dateCopy.getDate()).padStart(2, '0');
   
+  console.log(`Formatting date: ${date.toISOString()} -> ${year}-${month}-${day}`);
   return `${year}-${month}-${day}`;
 };
 
@@ -141,7 +146,59 @@ export const fetchBookingsFromGoogleSheets = async (webAppUrl) => {
           console.error('Invalid data format from Google Sheets - expected array, got:', typeof data, '\nFull response:', result);
           return [];
         }
-        return data;
+        
+        // Add debugging for date processing - with safe date handling
+        if (data.length > 0) {
+          console.log('Sample booking data:');
+          data.slice(0, 3).forEach((booking, index) => {
+            try {
+              // Safely log date information
+              const dateStr = booking.date || '';
+              
+              // Don't try to create invalid Date objects
+              console.log(`Booking ${index}:`, {
+                originalDate: dateStr,
+                roomId: booking.roomId || booking.roomID || 'unknown',
+                timeSlot: booking.timeSlot || booking.slot || 'unknown'
+              });
+            } catch (error) {
+              console.error(`Error logging booking ${index}:`, error);
+            }
+          });
+        }
+        
+        // Sanitize the data to ensure it's safe to process
+        const sanitizedData = data.map(booking => {
+          try {
+            // Create a clean copy of the booking
+            const cleanBooking = { ...booking };
+            
+            // Handle potential invalid date values
+            if (cleanBooking.date) {
+              // Try to determine if it's a valid date string
+              const testDate = new Date(cleanBooking.date);
+              if (isNaN(testDate.getTime())) {
+                // If invalid, use current date as fallback
+                console.warn(`Invalid date found in booking: ${cleanBooking.date}, using today's date instead`);
+                cleanBooking.date = formatDateForSheet(new Date());
+              }
+            }
+            
+            // Return the sanitized booking
+            return cleanBooking;
+          } catch (error) {
+            console.error('Error sanitizing booking:', error, booking);
+            // Return a minimal valid booking
+            return {
+              roomId: booking.roomId || booking.roomID || '',
+              timeSlot: booking.timeSlot || booking.slot || '',
+              date: formatDateForSheet(new Date()),
+              studentId: booking.studentId || booking.studentID || ''
+            };
+          }
+        });
+        
+        return sanitizedData;
       } else {
         console.error('Fetch failed with status:', response.status);
       }
@@ -166,7 +223,7 @@ export const fetchBookingsFromGoogleSheets = async (webAppUrl) => {
     return [];
   } catch (error) {
     console.error('Error fetching bookings:', error);
-    throw error;
+    return []; // Return empty array instead of throwing to prevent app crashes
   }
 };
 
@@ -302,69 +359,81 @@ export const normalizeTimeSlotFormat = (timeSlotStr) => {
  * @returns {Object|null} - The matching time slot object or null if not found
  */
 export const findExactTimeSlot = (timeSlotStr, timeSlots) => {
-  // First normalize the time slot string (removing any ts. prefix)
-  const normalizedTimeSlot = normalizeTimeSlotFormat(timeSlotStr);
-  
-  // Try direct match first (comparing just the time portion)
-  const exactMatch = timeSlots.find(slot => {
-    // Compare both with and without 'ts.' prefix
-    return slot.label === normalizedTimeSlot || 
-           slot.label === `ts.${normalizedTimeSlot}` ||
-           slot.label.replace('ts.', '') === normalizedTimeSlot;
-  });
-  if (exactMatch) return exactMatch;
-  
-  // If no direct match, try to extract the hours
-  const numbers = normalizedTimeSlot.match(/\d+/g);
-  if (numbers && numbers.length >= 2) {
-    const startHour = parseInt(numbers[0], 10);
-    const endHour = parseInt(numbers[1], 10);
-    
-    // Look for a time slot with the same start and end hours
-    const hourMatch = timeSlots.find(slot => {
-      // Handle both formats: "HH-HH" and "ts.HH-HH"
-      const slotLabel = slot.label.startsWith('ts.') ? 
-        slot.label.substring(3) : 
-        slot.label;
-      
-      const slotNumbers = slotLabel.match(/\d+/g);
-      if (slotNumbers && slotNumbers.length >= 2) {
-        const slotStart = parseInt(slotNumbers[0], 10);
-        const slotEnd = parseInt(slotNumbers[1], 10);
-        return slotStart === startHour && slotEnd === endHour;
-      }
-      return false;
-    });
-    
-    if (hourMatch) return hourMatch;
+  if (!timeSlotStr || !Array.isArray(timeSlots) || !timeSlots.length) {
+    return null;
   }
   
-  // If we still don't have a match, try matching just the start hour
-  if (numbers && numbers.length >= 1) {
-    const startHour = parseInt(numbers[0], 10);
-    const endHour = startHour + 3;
+  try {
+    // First normalize the time slot string (removing any ts. prefix)
+    const normalizedTimeSlot = normalizeTimeSlotFormat(timeSlotStr);
     
-    const hourMatch = timeSlots.find(slot => {
-      const slotLabel = slot.label.startsWith('ts.') ? 
-        slot.label.substring(3) : 
-        slot.label;
-      
-      const slotNumbers = slotLabel.match(/\d+/g);
-      if (slotNumbers && slotNumbers.length >= 2) {
-        const slotStart = parseInt(slotNumbers[0], 10);
-        const slotEnd = parseInt(slotNumbers[1], 10);
-        return slotStart === startHour && slotEnd === endHour;
-      }
-      return false;
+    // Log each attempt to match for debugging
+    console.log(`Finding time slot match for: ${timeSlotStr} -> normalized: ${normalizedTimeSlot}`);
+    
+    // Try direct match first (comparing just the time portion)
+    const exactMatch = timeSlots.find(slot => {
+      // Compare both with and without 'ts.' prefix
+      return slot.label === normalizedTimeSlot || 
+             slot.label === `ts.${normalizedTimeSlot}` ||
+             slot.label.replace('ts.', '') === normalizedTimeSlot;
     });
+    if (exactMatch) return exactMatch;
     
-    if (hourMatch) return hourMatch;
+    // If no direct match, try to extract the hours
+    const numbers = normalizedTimeSlot.match(/\d+/g);
+    if (numbers && numbers.length >= 2) {
+      const startHour = parseInt(numbers[0], 10);
+      const endHour = parseInt(numbers[1], 10);
+      
+      // Look for a time slot with the same start and end hours
+      const hourMatch = timeSlots.find(slot => {
+        // Handle both formats: "HH-HH" and "ts.HH-HH"
+        const slotLabel = slot.label.startsWith('ts.') ? 
+          slot.label.substring(3) : 
+          slot.label;
+        
+        const slotNumbers = slotLabel.match(/\d+/g);
+        if (slotNumbers && slotNumbers.length >= 2) {
+          const slotStart = parseInt(slotNumbers[0], 10);
+          const slotEnd = parseInt(slotNumbers[1], 10);
+          return slotStart === startHour && slotEnd === endHour;
+        }
+        return false;
+      });
+      
+      if (hourMatch) return hourMatch;
+    }
+    
+    // If we still don't have a match, try matching just the start hour
+    if (numbers && numbers.length >= 1) {
+      const startHour = parseInt(numbers[0], 10);
+      const endHour = startHour + 3;
+      
+      const hourMatch = timeSlots.find(slot => {
+        const slotLabel = slot.label.startsWith('ts.') ? 
+          slot.label.substring(3) : 
+          slot.label;
+        
+        const slotNumbers = slotLabel.match(/\d+/g);
+        if (slotNumbers && slotNumbers.length >= 2) {
+          const slotStart = parseInt(slotNumbers[0], 10);
+          const slotEnd = parseInt(slotNumbers[1], 10);
+          return slotStart === startHour && slotEnd === endHour;
+        }
+        return false;
+      });
+      
+      if (hourMatch) return hourMatch;
+    }
+    
+    // If we still don't have a match, log details and return null
+    console.warn(`Could not find exact time slot match for: ${timeSlotStr} (normalized: ${normalizedTimeSlot})`);
+    console.log('Available time slots:', timeSlots.map(ts => ts.label));
+    return null;
+  } catch (error) {
+    console.error('Error finding time slot match:', error);
+    return null;
   }
-  
-  // If we still don't have a match, log details and return null
-  console.warn(`Could not find exact time slot match for: ${timeSlotStr} (normalized: ${normalizedTimeSlot})`);
-  console.log('Available time slots:', timeSlots.map(ts => ts.label));
-  return null;
 };
 
 /**
