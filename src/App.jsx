@@ -72,6 +72,9 @@ function App() {
   // Add state for debug panel visibility
   const [showDebugPanel, setShowDebugPanel] = useState(false);
 
+  // Add state for reload loading overlay
+  const [isReloading, setIsReloading] = useState(false);
+
   // Generate available dates (today + 6 more days)
   const availableDates = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
@@ -194,6 +197,9 @@ function App() {
           localStorage.setItem('selectedDate', selectedDate.toISOString());
           localStorage.setItem('lastBookingSuccess', 'true');
           
+          // Show overlay with loading indicator
+          setIsReloading(true);
+          
           // Show notification before reload
           setNotification({
             show: true,
@@ -215,6 +221,9 @@ function App() {
         console.error('Failed to submit to Google Sheets:', error);
         setIsSubmitting(false);
         setBookingSuccess(true);
+        
+        // Show loading overlay
+        setIsReloading(true);
         
         // Still reload after a short delay even on error
         setTimeout(() => {
@@ -703,6 +712,16 @@ function App() {
       {notification.show && (
         <div className="notification" style={{ left: notification.x, top: notification.y }}>
           {notification.message}
+        </div>
+      )}
+      
+      {/* Reload Loading Overlay */}
+      {isReloading && (
+        <div className="reloading-overlay">
+          <div className="reloading-content">
+            <div className="loading-spinner"></div>
+            <div className="reloading-text">กำลังโหลดข้อมูลใหม่...</div>
+          </div>
         </div>
       )}
       </div>
