@@ -42,6 +42,17 @@ html, body {
   margin: 0 auto;
   padding: var(--space-md);
   background-color: var(--bg-content);
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  #root {
+    padding: 0;
+  }
+  body {
+    overflow-x: hidden;
+  }
 }
 
 /* Typography */
@@ -56,14 +67,14 @@ input, button {
   padding: var(--space-sm);
   margin: var(--space-sm) 0;
   border: 1px solid var(--border-color);
-  border-radius: 0.25rem;
+  /* border-radius: 0.25rem; */
 }
 
 button {
   background-color: var(--cell-available);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  /* transition: all 0.2s ease; */
 }
 
 button:hover,
@@ -76,9 +87,24 @@ button:hover,
 /* Date Selection */
 .date-selector {
   display: flex;
-  gap: 6px;
-  padding: 6px 0;
-  
+  gap: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.date-selector button {
+  flex: 1;
+  min-width: 60px;
+  padding: 6px 4px;
+  border-radius: 0;
+  margin: 0;
+  border-right: none;
+}
+
+.date-selector button:last-child {
+  border-right: 1px solid var(--border-color);
 }
 
 .date-selector button {
@@ -102,6 +128,25 @@ table {
   border-collapse: collapse;
   width: 100%;
   margin: var(--space-sm) 0;
+}
+
+.room-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0;
+  padding: 10px;
+  background-color: var(--bg-content);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .room-table-container {
+    padding: 10px 0;
+  }
+  table {
+    min-width: 100%;
+  }
 }
 
 th, td {
