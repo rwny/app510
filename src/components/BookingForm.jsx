@@ -56,16 +56,25 @@ const BookingForm = ({
         </div>
         
         <div className="user-info">
-          <input
+            <input
             type="tel"
             value={studentID}
-            onChange={(e) => setStudentID(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (/^\d*$/.test(value) && value.length <= 8) {
+                setStudentID(value);
+              }
+            }}
             placeholder="รหัสนักศึกษา 8 หลัก"
             maxLength="8"
             pattern="\d{8}"
-            title="กรุณากรอกรหัสนักศึกษา 8 หลัก"
+            title="กรุณากรอกรหัสนักศึกษา 8 หลัก (ปีปัจจุบัน 68 และย้อนหลัง 7 ปี)"
             disabled={!selectedRoom || selectedTimeSlot === null}
+            className={studentID.length === 8 && !/^6[1-8]/.test(studentID) ? "error-input" : ""}
           />
+          {studentID.length === 8 && !/^6[1-8]/.test(studentID) && (
+            <div className="error-message">wrong-ID</div>
+          )}
         </div>
         
         <button

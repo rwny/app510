@@ -50,10 +50,12 @@ function App() {
   
   // Notification state
   const [notification, setNotification] = useState({ 
-    show: false, 
-    message: '', 
-    x: 0, 
-    y: 0 
+    show: false,
+    message: '',
+    x: 0,
+    y: 0,
+    isConfirmation: false,
+    onConfirm: null 
   });
 
   // State for floor plan modal
@@ -71,9 +73,6 @@ function App() {
 
   // Add state for debug panel visibility
   const [showDebugPanel, setShowDebugPanel] = useState(false);
-
-  // Add state for reload loading overlay
-  const [isReloading, setIsReloading] = useState(false);
 
   // Generate available dates (today + 6 more days)
   const availableDates = Array.from({ length: 7 }, (_, i) => {
@@ -146,13 +145,22 @@ function App() {
     return !isRoomBooked(roomId, date, timeSlotId) && !isTimeSlotPast(date, timeSlotId);
   };
   
-  // Validate student ID - must be exactly 8 characters
-  const isStudentIDValid = studentID.trim().length === 8;
+  // Validate student ID - must be exactly 8 characters and first 2 digits between 61-68
+  const isStudentIDValid = studentID.trim().length === 8 && 
+                         /^6[1-8]/.test(studentID);
   
   // Book a room
   const bookRoom = () => {
-    if (!selectedRoom || selectedTimeSlot === null || selectedTimeSlot === undefined || !isStudentIDValid) {
-      alert('กรุณาเลือกห้อง เวลา และกรอกรหัสนักศึกษา 8 หลัก');
+    if (!selectedRoom || selectedTimeSlot === null || selectedTimeSlot === undefined) {
+      alert('กรุณาเลือกห้องและเวลา');
+      return;
+    }
+    if (studentID.trim().length !== 8) {
+      alert('กรุณากรอกรหัสนักศึกษา 8 หลัก');
+      return;
+    }
+    if (!/^6[1-8]/.test(studentID)) {
+      alert('รหัสนักศึกษาไม่ถูกต้อง (ต้องขึ้นต้นด้วย 61-68)');
       return;
     }
     
@@ -197,9 +205,6 @@ function App() {
           localStorage.setItem('selectedDate', selectedDate.toISOString());
           localStorage.setItem('lastBookingSuccess', 'true');
           
-          // Show overlay with loading indicator
-          setIsReloading(true);
-          
           // Show notification before reload
           setNotification({
             show: true,
@@ -211,19 +216,38 @@ function App() {
           console.error('Error saving state before reload:', e);
         }
         
-        // Set a timeout to allow notification to be seen before reload
+        // Show booked state immediately from local data
+        setBookings(prev => ({
+          ...prev,
+          [dateStr]: {
+            ...(prev[dateStr] || {}),
+            [selectedRoom]: {
+              ...(prev[dateStr]?.[selectedRoom] || {}),
+              [selectedTimeSlot]: { studentID }
+            }
+          }
+        }));
+
+        // Refresh data in background after 1 second
         setTimeout(() => {
-          // Reload the page but stay on the same date
-          window.location.reload();
-        }, 2000);
+          fetchBookingsFromGoogleSheets(googleSheetWebAppUrl)
+            .then(data => {
+              const bookingsMap = processBookingData(data);
+              setBookings(bookingsMap);
+              // Clear the refresh notification after successful update
+              setNotification(prev => ({ ...prev, show: false }));
+            })
+            .catch(error => {
+              console.error(error);
+              // Clear the refresh notification even if update fails
+              setNotification(prev => ({ ...prev, show: false }));
+            });
+        }, 1000);
       })
       .catch(error => {
         console.error('Failed to submit to Google Sheets:', error);
         setIsSubmitting(false);
         setBookingSuccess(true);
-        
-        // Show loading overlay
-        setIsReloading(true);
         
         // Still reload after a short delay even on error
         setTimeout(() => {
@@ -405,6 +429,76 @@ function App() {
       console.error('Error getting booking details:', error);
       return 'ว่าง';
     }
+  };
+
+  const processBookingData = (data) => {
+    const bookingsMap = {};
+    
+    if (data && Array.isArray(data)) {
+      data.forEach((booking) => {
+        try {
+          const roomId = booking.roomId || booking.roomID;
+          if (!roomId) return;
+          
+          const timeSlotStr = booking.timeSlot || booking.slot;
+          if (!timeSlotStr) return;
+          
+          const timeSlotMatch = findExactTimeSlot(timeSlotStr, timeSlots);
+          if (!timeSlotMatch) return;
+          
+          const timeSlotId = timeSlotMatch.id;
+          let bookingDate = booking.date || booking.bookingDate;
+          if (!bookingDate) return;
+
+          // Parse date using multiple approaches to ensure correctness
+          let dateObj = null;
+          
+          if (typeof bookingDate === 'string') {
+            if (bookingDate.match(/^\d{4}-\d{2}-\d{2}/)) {
+              const datePart = bookingDate.split('T')[0];
+              const [year, month, day] = datePart.split('-').map(num => parseInt(num, 10));
+              dateObj = new Date(Date.UTC(year, month - 1, day));
+            } else if (bookingDate.includes('/')) {
+              const parts = bookingDate.split('/');
+              if (parts.length === 3) {
+                const month = parseInt(parts[0], 10);
+                const day = parseInt(parts[1], 10);
+                const year = parseInt(parts[2], 10);
+                dateObj = new Date(Date.UTC(year, month - 1, day));
+              }
+            } else {
+              dateObj = new Date(bookingDate);
+            }
+          } else if (bookingDate instanceof Date) {
+            dateObj = new Date(bookingDate);
+          }
+          
+          if (!dateObj || isNaN(dateObj.getTime())) {
+            dateObj = new Date(selectedDate);
+          }
+          
+          const year = dateObj.getUTCFullYear();
+          const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(dateObj.getUTCDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
+          
+          if (!bookingsMap[dateStr]) {
+            bookingsMap[dateStr] = {};
+          }
+          if (!bookingsMap[dateStr][roomId]) {
+            bookingsMap[dateStr][roomId] = {};
+          }
+          
+          bookingsMap[dateStr][roomId][timeSlotId] = {
+            studentID: booking.studentId || booking.studentID || '',
+            rawDate: bookingDate
+          };
+        } catch (error) {
+          console.error('Error processing booking record:', error, booking);
+        }
+      });
+    }
+    return bookingsMap;
   };
 
   useEffect(() => {
@@ -710,20 +804,27 @@ function App() {
       
       {/* Notification */}
       {notification.show && (
-        <div className="notification" style={{ left: notification.x, top: notification.y }}>
+        <div 
+          className={`notification ${notification.isConfirmation ? 'confirmation' : ''}`} 
+          style={{ 
+            left: notification.isConfirmation ? '50%' : notification.x, 
+            top: notification.y 
+          }}
+        >
           {notification.message}
+          {notification.isConfirmation && (
+            <button 
+              onClick={() => {
+                notification.onConfirm?.();
+                setNotification(prev => ({ ...prev, show: false }));
+              }}
+            >
+              ตกลง
+            </button>
+          )}
         </div>
       )}
       
-      {/* Reload Loading Overlay */}
-      {isReloading && (
-        <div className="reloading-overlay">
-          <div className="reloading-content">
-            <div className="loading-spinner"></div>
-            <div className="reloading-text">กำลังโหลดข้อมูลใหม่...</div>
-          </div>
-        </div>
-      )}
       </div>
     </ErrorBoundary>
   );
