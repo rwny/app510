@@ -148,7 +148,9 @@ function TimeRoomTable({
   return (
     <div className="room-table-container">
       <div className="date-selector">
-        {Array.from({ length: 7 }).map((_, i) => {
+
+        {/* Assuming date length is 5 for 5 days ----------------------------- */}
+        {Array.from({ length: 5 }).map((_, i) => { 
           const date = new Date();
           date.setDate(date.getDate() + i);
           const isSelected = date.toDateString() === selectedDate.toDateString();
