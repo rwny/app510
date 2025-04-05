@@ -106,9 +106,19 @@ button:hover,
   border-radius: 0 !important;
   margin: 0;
   border-right: none;
-  height: 32px;
+  min-height: 32px;
   line-height: 1.2;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .date-selector button {
+    min-height: 44px;
+    padding: 4px 2px;
+  }
 }
 
 .date-selector button div:first-child {
