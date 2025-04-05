@@ -165,18 +165,20 @@ tr.selected td {
   color: white !important;
 }
 
-/* Selected cell styling - VERY VISIBLE */
+/* Selected cell styling - VERY VISIBLE with better scaling */
 td.selected {
   background-color: var(--cell-selected) !important;
   color: white !important;
   box-shadow: 0 0 0 4px var(--cell-selected), 
-              0 0 10px 5px rgba(59, 130, 246, 0.5);
+              0 0 15px 7px rgba(59, 130, 246, 0.7);
   z-index: 10;
   position: relative;
   font-weight: bold;
-  transform: scale(1.1);
-  transition: all 0.2s ease;
-  animation: pulse 1s infinite alternate;
+  /* transform: scale(1.15) translateZ(0); */
+  /* transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); */
+  /* animation: pulse 0.8s infinite alternate; */
+  /* margin: -2px; */
+  /* outline: 2px solid white; */
 }
 
 /* Header cells for selected row/column - VERY VISIBLE */
@@ -235,4 +237,97 @@ td[data-hover-info]:hover::after {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateX(-50%) translateY(4px); }
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Version text styling */
+.version-text {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 300;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 2px 6px;
+  border-radius: 3px;
+  z-index: 1000;
+}
+
+/* Booking Form - matches table styling */
+.booking-form {
+  background-color: var(--bg-content);
+  /* border: 1px solid var(--border-color); */
+  /* border-radius: 8px; */
+  /* padding: 20px; */
+  /* margin: 20px 0; */
+  /* box-shadow: 0 2px 8px rgba(44, 74, 52, 0.05); */
+}
+
+.booking-form h3 {
+  color: var(--accent-primary);
+  margin-bottom: 16px;
+}
+
+.booking-form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.booking-info {
+  font-weight: bold;
+  color: var(--text-secondary);
+}
+
+.booking-info-row {
+  grid-column: 1 / -1;
+  order: 1;
+  font-weight: bold;
+  color: var(--text-secondary);
+}
+
+.booking-form input,
+.booking-form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-content);
+  color: var(--text-primary);
+  font-size: 20px;
+  align-items: center;
+  
+}
+
+.student-input-field {
+  color: black;
+  font-weight: bold;
+}
+
+.booking-form button {
+  background-color: var(--accent-primary);
+  color: white;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  min-width: 60px;
+  white-space: nowrap;
+}
+
+.booking-form button:hover {
+  background-color: var(--accent-hover);
+}
+
+@media (max-width: 768px) {
+  .booking-form {
+    padding: 16px;
+  }
+  
+  .booking-form-grid {
+    grid-template-columns: 1fr;
+  }
 }

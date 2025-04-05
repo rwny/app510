@@ -723,12 +723,11 @@ function App() {
   const appRef = useRef(null)
 
   const formatDate = (date) => {
-    return date.toLocaleDateString('th-TH', { 
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      day: 'numeric', 
+      month: 'short'
+    });
   }
 
   const formatTimeSlotLong = (timeSlotId) => {
