@@ -66,7 +66,8 @@ button {
   transition: all 0.2s ease;
 }
 
-button:hover {
+button:hover,
+.date-selector button:hover {
   background-color: var(--cell-selected);
   color: var(--cell-selected-text);
   border-color: var(--cell-selected);
@@ -77,6 +78,7 @@ button:hover {
   display: flex;
   gap: 6px;
   padding: 6px 0;
+  
 }
 
 .date-selector button {
@@ -87,6 +89,12 @@ button:hover {
   border: 1px solid var(--border-color);
   font-weight: 500;
   font-size: 0.85rem;
+}
+
+.date-selector button.selected {
+  background-color: var(--cell-selected);
+  color: var(--cell-selected-text);
+  border-color: var(--cell-selected);
 }
 
 /* Tables */
@@ -235,6 +243,9 @@ tr.selected td {
   width: 100%;
   padding: 8px;
   font-size: 0.95rem;
+  background-color: white;
+  color: black;
+  border: 1px solid var(--border-color);
 }
 
 @media (max-width: 768px) {
