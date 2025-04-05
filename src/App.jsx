@@ -16,6 +16,17 @@ import {
   findExactTimeSlot
 } from './utils/googleSheetUtils'
 
+// Define a global constant for debugging
+const isDebugging = () => {
+  try {
+    const debugOverride = localStorage.getItem('debugOverride');
+    return debugOverride === 'true' || (process.env.NODE_ENV === 'development' && debugOverride !== 'false');
+  } catch (e) {
+    console.error("Error accessing localStorage:", e);
+    return process.env.NODE_ENV === 'development';
+  }
+};
+
 function App() {
   // Set the current building (can be made dynamic in the future)
   const buildingID = 'AR15';
@@ -105,7 +116,9 @@ function App() {
       const dateStr = `${year}-${month}-${day}`;
       
       // For debugging
-      console.log(`Checking booking: ${dateStr}, room: ${roomId}, timeslot: ${timeSlotId}`);
+      if (isDebugging()) {
+        console.log(`Checking booking: ${dateStr}, room: ${roomId}, timeslot: ${timeSlotId}`);
+      }
       
       const timeSlot = timeSlots.find(slot => slot.id === timeSlotId);
       
@@ -269,6 +282,7 @@ function App() {
 
   // Add this debugging function
   const analyzeBookingDates = (bookingsData) => {
+    if (!isDebugging()) return; // Disable in production
     if (!bookingsData || Object.keys(bookingsData).length === 0) {
       console.log('No booking data to analyze');
       return;
@@ -346,7 +360,8 @@ function App() {
   };
 
   // Add this debug function to deeply inspect bookings data in the console
-  const debugBookingData = () => {
+  const debugBookingData = () =>  {
+    if (!isDebugging()) return; // Disable in production
     console.group("BOOKING DATA DEBUG:");
     console.log("Current bookings state:", bookings);
     
@@ -404,7 +419,9 @@ function App() {
         return `จอง: ${maskedID}`;
       }
       
-      console.log(`No booking found for timeslot: ${timeSlotId}`);
+      if (isDebugging()) {
+        console.log(`No booking found for timeslot: ${timeSlotId}`);
+      }
       return 'ว่าง';
     } catch (error) {
       console.error('Error getting booking details:', error);
@@ -509,14 +526,16 @@ function App() {
         
         // Process data if we got any, otherwise use empty map
         if (data && Array.isArray(data)) {
-          console.log('*** PROCESSING BOOKINGS DATA ***');
-          // Log selected date with consistent formatting to debug timezone issues
-          const selYear = selectedDate.getFullYear();
-          const selMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
-          const selDay = String(selectedDate.getDate()).padStart(2, '0');
-          const selDateStr = `${selYear}-${selMonth}-${selDay}`;
-          
-          console.log('Selected date formatted for fetch:', selDateStr);
+          if (isDebugging()) {
+            console.log('*** PROCESSING BOOKINGS DATA ***');
+            // Log selected date with consistent formatting to debug timezone issues
+            const selYear = selectedDate.getFullYear();
+            const selMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const selDay = String(selectedDate.getDate()).padStart(2, '0');
+            const selDateStr = `${selYear}-${selMonth}-${selDay}`;
+            
+            console.log('Selected date formatted for fetch:', selDateStr);
+          }
           
           data.forEach((booking) => {
             try {
@@ -545,7 +564,9 @@ function App() {
                 return;
               }
 
-              console.log('Processing booking:', { roomId, timeSlotId, bookingDate, studentId: booking.studentId || booking.studentID });
+              if (isDebugging()) {
+                console.log('Processing booking:', { roomId, timeSlotId, bookingDate, studentId: booking.studentId || booking.studentID });
+              }
               
               // Parse date using multiple approaches to ensure correctness
               let dateObj = null;
@@ -562,11 +583,13 @@ function App() {
                   // Month is 0-indexed in JavaScript Date
                   dateObj = new Date(Date.UTC(year, month - 1, day));
                   
-                  console.log('Parsed ISO date string:', { 
-                    original: bookingDate, 
-                    parts: [year, month, day],
-                    parsed: dateObj.toISOString() 
-                  });
+                  if (isDebugging()) {
+                    console.log('Parsed ISO date string:', { 
+                      original: bookingDate, 
+                      parts: [year, month, day],
+                      parsed: dateObj.toISOString() 
+                    });
+                  }
                 } 
                 // Check if it has slashes (MM/DD/YYYY format)
                 else if (bookingDate.includes('/')) {
@@ -581,20 +604,24 @@ function App() {
                     // Create Date with UTC to avoid timezone shifts
                     dateObj = new Date(Date.UTC(year, month - 1, day));
                     
-                    console.log('Parsed date with slashes:', { 
-                      original: bookingDate, 
-                      parts: [month, day, year],
-                      parsed: dateObj.toISOString() 
-                    });
+                    if (isDebugging()) {
+                      console.log('Parsed date with slashes:', { 
+                        original: bookingDate, 
+                        parts: [month, day, year],
+                        parsed: dateObj.toISOString() 
+                      });
+                    }
                   }
                 }
                 // Try with any other format
                 else {
                   dateObj = new Date(bookingDate);
-                  console.log('Parsed with generic Date constructor:', {
-                    original: bookingDate,
-                    parsed: dateObj.toISOString()
-                  });
+                  if (isDebugging()) {
+                    console.log('Parsed with generic Date constructor:', {
+                      original: bookingDate,
+                      parsed: dateObj.toISOString()
+                    });
+                  }
                 }
               } else if (bookingDate instanceof Date) {
                 dateObj = new Date(bookingDate);
@@ -612,7 +639,9 @@ function App() {
               const day = String(dateObj.getUTCDate()).padStart(2, '0');
               const dateStr = `${year}-${month}-${day}`;
               
-              console.log(`Final date string: ${dateStr}`);
+              if (isDebugging()) {
+                console.log(`Final date string: ${dateStr}`);
+              }
               
               // Initialize structures if needed
               if (!bookingsMap[dateStr]) {
@@ -627,7 +656,9 @@ function App() {
                 rawDate: bookingDate // Keep the original date for debugging
               };
               
-              console.log(`Added booking: Room ${roomId}, Date ${dateStr}, TimeSlot ${timeSlotId}, Student: ${booking.studentId || booking.studentID}`);
+              if (isDebugging()) {
+                console.log(`Added booking: Room ${roomId}, Date ${dateStr}, TimeSlot ${timeSlotId}, Student: ${booking.studentId || booking.studentID}`);
+              }
             } catch (error) {
               console.error('Error processing booking record:', error, booking);
             }
@@ -635,10 +666,12 @@ function App() {
         }
         
         // Log the final bookings map for each date
-        console.log('Final bookings map:', Object.keys(bookingsMap).map(date => ({
-          date,
-          rooms: Object.keys(bookingsMap[date] || {}).length
-        })));
+        if (isDebugging()) {
+          console.log('Final bookings map:', Object.keys(bookingsMap).map(date => ({
+            date,
+            rooms: Object.keys(bookingsMap[date] || {}).length
+          })));
+        }
         
         if (isMounted) {
           setBookings(bookingsMap);

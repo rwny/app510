@@ -2,6 +2,17 @@
  * Utility functions for Google Sheets integration
  */
 
+// Define a global constant for debugging
+const isDebugging = () => {
+  try {
+    const debugOverride = localStorage.getItem('debugOverride');
+    return debugOverride === 'true' || (process.env.NODE_ENV === 'development' && debugOverride !== 'false');
+  } catch (e) {
+    console.error("Error accessing localStorage:", e);
+    return process.env.NODE_ENV === 'development';
+  }
+};
+
 // Submit data to Google Sheets via iframe to avoid CORS issues
 export const submitToGoogleSheets = (scriptUrl, data) => {
   return new Promise((resolve, reject) => {
@@ -74,7 +85,9 @@ export const formatDateForSheet = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
   
   const formatted = `${year}-${month}-${day}`;
-  console.log(`Formatting date - Year: ${year}, Month: ${month}, Day: ${day} => ${formatted}`);
+  if (isDebugging()) {
+    console.log(`Formatting date - Year: ${year}, Month: ${month}, Day: ${day} => ${formatted}`);
+  }
   return formatted;
 };
 
@@ -107,7 +120,9 @@ export const getBangkokISOString = (date = new Date()) => {
  */
 export const fetchBookingsFromGoogleSheets = async (webAppUrl) => {
   try {
-    console.log('Fetching bookings from Google Sheets:', webAppUrl);
+    if (isDebugging()) {
+      console.log('Fetching bookings from Google Sheets:', webAppUrl);
+    }
     
     // Create a cachebuster to prevent caching
     const cacheBuster = Date.now();
