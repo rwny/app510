@@ -12,18 +12,18 @@
   /* Cell States */
   --cell-past: #e9ecef;
   --cell-booked: #e9ecef;
-  --cell-available: #d1fae5;
+  --cell-available: #a6f3b3;
   --cell-selected: #3b82f6;
   --cell-selected-text: #ffffff;
   
   /* Spacing */
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
+  --space-sm: 0.4rem;
+  --space-md: 0.8rem;
+  --space-lg: 1.2rem;
   
   /* Typography */
   --font-base: system-ui, -apple-system, sans-serif;
-  --line-height: 1.5;
+  --line-height: 1.3;
 }
 
 /* Base Styles */
@@ -40,13 +40,13 @@ html, body {
 #root {
   max-width: 1000px;
   margin: 0 auto;
-  padding: var(--space-lg);
+  padding: var(--space-md);
   background-color: var(--bg-content);
 }
 
 /* Typography */
 h1, h2, h3, h4 {
-  margin: 0 0 var(--space-md) 0;
+  margin: 0 0 var(--space-sm) 0;
   color: var(--text-primary);
 }
 
@@ -75,43 +75,33 @@ button:hover {
 /* Date Selection */
 .date-selector {
   display: flex;
-  gap: 8px;
-  padding: 8px 0;
+  gap: 6px;
+  padding: 6px 0;
 }
 
 .date-selector button {
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
   transition: all 0.2s ease;
   background-color: var(--cell-available);
   border: 1px solid var(--border-color);
   font-weight: 500;
-}
-
-.date-selector button:hover {
-  background-color: var(--cell-selected);
-  color: var(--cell-selected-text);
-  border-color: var(--cell-selected);
-}
-
-.date-selector button.selected {
-  background-color: var(--cell-selected);
-  color: var(--cell-selected-text);
-  border-color: var(--cell-selected);
+  font-size: 0.85rem;
 }
 
 /* Tables */
 table {
   border-collapse: collapse;
   width: 100%;
-  margin: var(--space-md) 0;
+  margin: var(--space-sm) 0;
 }
 
 th, td {
   border: 1px solid var(--border-color);
-  padding: var(--space-sm);
+  padding: 4px 6px;
   text-align: center;
   color: var(--text-secondary);
+  font-size: 0.85rem;
 }
 
 th {
@@ -139,112 +129,87 @@ td.available:hover {
   color: white
 }
 
-/* Selected cell and its row/column highlighting */
+/* Selected cell styling */
 td.selected {
-  background-color: var(--cell-selected);
-  color: var(--cell-selected-text);
+  background-color: var(--cell-selected) !important;
+  color: var(--cell-selected-text) !important;
   position: relative;
   z-index: 1;
 }
 
-/* Highlight entire time slot row - VERY VISIBLE */
+/* Highlight entire time slot row */
 tr.selected td {
   background-color: rgba(59, 130, 246, 0.5) !important;
-  border-right: 3px solid var(--cell-selected) !important;
-  border-left: 3px solid var(--cell-selected) !important;
+  border-right: 2px solid var(--cell-selected) !important;
+  border-left: 2px solid var(--cell-selected) !important;
   font-weight: bold;
   color: white !important;
 }
 
-/* Highlight entire room column - VERY VISIBLE */ 
+/* Highlight entire room column */ 
 .highlight-column {
   background-color: rgba(59, 130, 246, 0.5) !important;
-  border-top: 3px solid #00ffff !important;
-  border-bottom: 3px solid #00ffff !important;
+  border-top: 2px solid #00ffff !important;
+  border-bottom: 2px solid #00ffff !important;
   font-weight: bold;
   color: white !important;
 }
 
-/* Selected cell styling - VERY VISIBLE with better scaling */
-td.selected {
-  background-color: var(--cell-selected) !important;
-  color: white !important;
-  box-shadow: 0 0 0 4px var(--cell-selected), 
-              0 0 15px 7px rgba(59, 130, 246, 0.7);
-  z-index: 10;
+/* Tooltip hover styles */
+.room-table td {
   position: relative;
-  font-weight: bold;
-  /* transform: scale(1.15) translateZ(0); */
-  /* transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); */
-  /* animation: pulse 0.8s infinite alternate; */
-  /* margin: -2px; */
-  /* outline: 2px solid white; */
 }
 
-/* Header cells for selected row/column - VERY VISIBLE */
-tr.selected th,
-.highlight-column.header-cell {
-  background-color: var(--cell-selected) !important;
-  color: white !important;
-  font-weight: bold;
-  text-shadow: 0 0 5px white;
-}
-
-@keyframes pulse {
-  from { box-shadow: 0 0 0 4px var(--cell-selected); }
-  to { box-shadow: 0 0 0 8px var(--cell-selected); }
-}
-
-/* Rich tooltip styling */
 .tooltip-content {
-  background-color: #2d3748;
+  background-color: #333;
   color: white;
   padding: 12px;
   border-radius: 6px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 220px;
-  font-size: 14px;
-  line-height: 1.5;
+  min-width: 180px;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .tooltip-header {
-  border-bottom: 1px solid #4a5568;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 6px;
   margin-bottom: 6px;
-  font-size: 15px;
 }
 
-.tooltip-content div {
-  margin: 4px 0;
+.tooltip-header strong {
+  color: white;
+  font-weight: 600;
 }
 
-/* Simple time cell hover tooltip fallback */
-td[data-hover-info]:hover::after {
+.room-table td:hover::after {
   content: attr(data-hover-info);
   position: absolute;
   left: 50%;
   bottom: 100%;
   transform: translateX(-50%);
-  background-color: #495057;
+  background-color: #333;
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 0;
+  border-radius: 6px;
   z-index: 100;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  min-width: 180px;
+  text-align: left;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0.98;
+  overflow: hidden;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
 
 /* Version text styling */
 .version-text {
   position: fixed;
   bottom: 10px;
   right: 10px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #888;
   font-weight: 300;
   background-color: rgba(255, 255, 255, 0.7);
@@ -253,78 +218,28 @@ td[data-hover-info]:hover::after {
   z-index: 1000;
 }
 
-/* Booking Form - matches table styling */
+/* Booking Form */
 .booking-form {
   background-color: var(--bg-content);
-  /* border: 1px solid var(--border-color); */
-  /* border-radius: 8px; */
-  /* padding: 20px; */
-  /* margin: 20px 0; */
-  /* box-shadow: 0 2px 8px rgba(44, 74, 52, 0.05); */
-}
-
-.booking-form h3 {
-  color: var(--accent-primary);
-  margin-bottom: 16px;
 }
 
 .booking-form-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.booking-info {
-  font-weight: bold;
-  color: var(--text-secondary);
-}
-
-.booking-info-row {
-  grid-column: 1 / -1;
-  order: 1;
-  font-weight: bold;
-  color: var(--text-secondary);
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .booking-form input,
 .booking-form select {
   width: 100%;
-  padding: 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background-color: var(--bg-content);
-  color: var(--text-primary);
-  font-size: 20px;
-  align-items: center;
-  
-}
-
-.student-input-field {
-  color: black;
-  font-weight: bold;
-}
-
-.booking-form button {
-  background-color: var(--accent-primary);
-  color: white;
-  padding: 4px 8px;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.85rem;
-  min-width: 60px;
-  white-space: nowrap;
-}
-
-.booking-form button:hover {
-  background-color: var(--accent-hover);
+  padding: 8px;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 768px) {
   .booking-form {
-    padding: 16px;
+    padding: 10px;
   }
   
   .booking-form-grid {

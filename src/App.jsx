@@ -145,9 +145,12 @@ function App() {
     return !isRoomBooked(roomId, date, timeSlotId) && !isTimeSlotPast(date, timeSlotId);
   };
   
-  // Validate student ID - must be exactly 8 characters and first 2 digits between 61-68
+  // Validate student ID - must be exactly 8 characters and first 2 digits match current Thai year
+  const currentYear = new Date().getFullYear() + 543 - 2000; // Convert to Thai year and get last 2 digits
+  const minYear = Math.max(61, currentYear - 7); // Allow up to 7 years old IDs
+  const maxYear = currentYear;
   const isStudentIDValid = studentID.trim().length === 8 && 
-                         /^6[1-8]/.test(studentID);
+                         new RegExp(`^6[${minYear-60}-${maxYear-60}]`).test(studentID);
   
   // Book a room
   const bookRoom = () => {
@@ -378,49 +381,27 @@ function App() {
       if (!bookings) return 'ว่าง';
       
       // Create date string in YYYY-MM-DD format directly from date parts
-      // This avoids timezone issues with toISOString()
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
       
-      // Debug output to help trace the issue
-      console.log(`Looking up booking: Date=${dateStr}, Room=${roomId}, TimeSlot=${timeSlotId}`);
-      
-      // Check if we have bookings for this date
-      if (!bookings[dateStr]) {
-        console.log(`No bookings found for date: ${dateStr}`);
-        return 'ว่าง';
-      }
-      
-      // Check if we have bookings for this room
-      if (!bookings[dateStr][roomId]) {
-        console.log(`No bookings found for room: ${roomId} on date: ${dateStr}`);
+      // Check if we have bookings for this date and room
+      if (!bookings[dateStr]?.[roomId]) {
         return 'ว่าง';
       }
       
       // Get the booking for this timeslot
       const booking = bookings[dateStr][roomId][timeSlotId];
       
-      // If booking exists, return formatted booking info
+      // If booking exists, return formatted booking info with masked student ID
       if (booking && booking.studentID) {
         const studentIDStr = String(booking.studentID);
-        const lastTwoDigits = studentIDStr.slice(-2);
-        const bookingDay = date.getDate();
+        const maskedID = studentIDStr.length >= 3 
+          ? 'xxxxx' + studentIDStr.slice(-3)
+          : 'xxxxx';
         
-        console.log(`Found booking: Student=${studentIDStr}, LastTwoDigits=${lastTwoDigits}, BookingDay=${bookingDay}`);
-        
-        // Add date verification markers
-        let matchIndicator = '';
-        if (parseInt(lastTwoDigits, 10) === bookingDay) {
-          matchIndicator = '✓'; // Exact match
-        } else if (parseInt(lastTwoDigits, 10) === bookingDay + 1) {
-          matchIndicator = '↑'; // Offset +1
-        } else if (parseInt(lastTwoDigits, 10) === bookingDay - 1) {
-          matchIndicator = '↓'; // Offset -1
-        }
-        
-        return `จอง: ${studentIDStr} ${matchIndicator}`;
+        return `จอง: ${maskedID}`;
       }
       
       console.log(`No booking found for timeslot: ${timeSlotId}`);

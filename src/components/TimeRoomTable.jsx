@@ -216,7 +216,7 @@ function TimeRoomTable({
                         onMouseLeave={handleMouseLeave}
                         title=""
                       >
-                        {isPast ? '-' : isBooked ? '-' : 'ว่าง'}  
+                        {isPast ? '-' : isBooked ? 'x' : 'O'}  
                       </td>
                     );
                   })}
