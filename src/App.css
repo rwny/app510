@@ -38,7 +38,7 @@ html, body {
 
 /* Content Container */
 #root {
-  max-width: 1000px;
+  max-width: 768px;
   margin: 0 auto;
   padding: var(--space-md);
   background-color: var(--bg-content);
@@ -46,7 +46,7 @@ html, body {
   overflow-x: hidden;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   #root {
     padding: 0;
   }
@@ -64,6 +64,8 @@ h1, h2, h3, h4 {
 /* Forms */
 input, button {
   font: inherit;
+  color: var(--cell-selected-text);
+
   padding: var(--space-sm);
   margin: var(--space-sm) 0;
   border: 1px solid var(--border-color);
@@ -72,6 +74,7 @@ input, button {
 
 button {
   background-color: var(--cell-available);
+  color: var(--cell-selected-text);
   color: var(--text-primary);
   cursor: pointer;
   /* transition: all 0.2s ease; */
@@ -91,6 +94,8 @@ button:hover,
   padding: 0;
   width: 100%;
   overflow-x: auto;
+  color: var(--cell-selected-text);
+
   -webkit-overflow-scrolling: touch;
 }
 
@@ -98,24 +103,46 @@ button:hover,
   flex: 1;
   min-width: 60px;
   padding: 6px 4px;
-  border-radius: 0;
+  border-radius: 0 !important;
   margin: 0;
   border-right: none;
+  height: 32px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.date-selector button div:first-child {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.date-selector button.selected div:first-child {
+  color: var(--cell-selected-text);
+}
+
+.date-selector button div:nth-child(2) {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.date-selector button.selected div:nth-child(2) {
+  color: var(--cell-selected-text);
+}
+
+.date-selector button div:last-child {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.date-selector button.selected div:last-child {
+  color: var(--cell-selected-text);
 }
 
 .date-selector button:last-child {
   border-right: 1px solid var(--border-color);
 }
 
-.date-selector button {
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  background-color: var(--cell-available);
-  border: 1px solid var(--border-color);
-  font-weight: 500;
-  font-size: 0.85rem;
-}
 
 .date-selector button.selected {
   background-color: var(--cell-selected);
